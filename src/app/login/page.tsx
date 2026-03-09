@@ -32,12 +32,12 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center bg-zinc-50 dark:bg-black font-sans">
-      <div className="w-full max-w-sm flex flex-col items-center gap-6 p-8 bg-white dark:bg-zinc-900 shadow-xl rounded-2xl border border-zinc-200 dark:border-zinc-800 transition-all">
+      <div className="w-full max-w-sm flex flex-col items-center gap-6 p-8 bg-white dark:bg-zinc-950 shadow-xl dark:shadow-black/30 rounded-2xl border border-zinc-200 dark:border-zinc-800/50 transition-all">
         <div className="text-center">
           <h1 className="text-3xl font-semibold tracking-tight text-black dark:text-white">
             Welcome Back
           </h1>
-          <p className="mt-2 text-zinc-500 dark:text-zinc-400">
+          <p className="mt-2 text-zinc-500 dark:text-zinc-300">
             Sign in to continue to traxx
           </p>
         </div>
