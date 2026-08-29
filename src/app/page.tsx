@@ -409,11 +409,15 @@ export default function Home() {
         editTask={editingTask}
       />
 
-      {/* Detailed Stats & Calendar Heatmap Modal */}
+      {/* Detailed Stats & Interactive Calendar Heatmap Modal */}
       <HabitStatsModal
         isOpen={!!statsHabit}
         habit={statsHabit}
-        onClose={() => setStatsHabit(null)}
+        onClose={() => {
+          setStatsHabit(null);
+          fetchHabits();
+        }}
+        onHabitUpdated={fetchHabits}
       />
     </div>
   );
