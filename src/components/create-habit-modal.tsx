@@ -1,8 +1,27 @@
 "use client";
 
-import { useState } from "react";
-import { Habit, HabitType, HabitStatusOption, AggregationType } from "@/types/habit";
-import { X, Plus, Trash2, CheckCircle2, Sparkles, BookOpen, Dumbbell, Droplets, Heart, Flame, Target, Brain, Coffee, Trophy } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Habit, HabitType, HabitStatusOption, AggregationType, FrequencyType } from "@/types/habit";
+import { API_BASE_URL } from "@/lib/api";
+import {
+  X,
+  Plus,
+  Trash2,
+  CheckCircle2,
+  Sparkles,
+  BookOpen,
+  Dumbbell,
+  Droplets,
+  Heart,
+  Flame,
+  Target,
+  Brain,
+  Coffee,
+  Trophy,
+  Calendar,
+  Clock,
+  Bell,
+} from "lucide-react";
 
 interface CreateHabitModalProps {
   isOpen: boolean;
@@ -38,6 +57,16 @@ const ICONS = [
   { name: "Trophy", icon: Trophy, label: "Milestone" },
 ];
 
+const DAYS_OF_WEEK = [
+  { key: "MON", label: "M", full: "Monday" },
+  { key: "TUE", label: "T", full: "Tuesday" },
+  { key: "WED", label: "W", full: "Wednesday" },
+  { key: "THU", label: "T", full: "Thursday" },
+  { key: "FRI", label: "F", full: "Friday" },
+  { key: "SAT", label: "S", full: "Saturday" },
+  { key: "SUN", label: "S", full: "Sunday" },
+];
+
 const DEFAULT_STATUS_PRESETS = {
   progress3: [
     { label: "Not Started", value: "NOT_STARTED", color: "#94A3B8", order: 0, isCompleted: false },
@@ -63,7 +92,17 @@ export function CreateHabitModal({ isOpen, onClose, onSuccess, editHabit }: Crea
   const [category, setCategory] = useState(editHabit?.category || "General");
   const [color, setColor] = useState(editHabit?.color || "#6366F1");
   const [icon, setIcon] = useState(editHabit?.icon || "CheckCircle");
-  
+
+  // Frequency & Schedule fields
+  const [frequencyType, setFrequencyType] = useState<FrequencyType>(editHabit?.frequencyType || "DAILY");
+  const [customDays, setCustomDays] = useState<string[]>(
+    editHabit?.frequencyDays ? editHabit.frequencyDays.split(",").map((d) => d.trim()) : ["MON", "WED", "FRI"]
+  );
+
+  // Reminder fields
+  const [reminderEnabled, setReminderEnabled] = useState(editHabit?.reminderEnabled || false);
+  const [reminderTime, setReminderTime] = useState(editHabit?.reminderTime || "08:00");
+
   // Numerical fields
   const [unit, setUnit] = useState(editHabit?.unit || "pages");
   const [targetValue, setTargetValue] = useState(editHabit?.targetValue?.toString() || "30");
@@ -79,7 +118,58 @@ export function CreateHabitModal({ isOpen, onClose, onSuccess, editHabit }: Crea
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (editHabit) {
+      setType(editHabit.type);
+      setTitle(editHabit.title);
+      setDescription(editHabit.description || "");
+      setCategory(editHabit.category || "General");
+      setColor(editHabit.color);
+      setIcon(editHabit.icon);
+      setFrequencyType(editHabit.frequencyType || "DAILY");
+      setCustomDays(
+        editHabit.frequencyDays
+          ? editHabit.frequencyDays.split(",").map((d) => d.trim())
+          : ["MON", "WED", "FRI"]
+      );
+      setReminderEnabled(Boolean(editHabit.reminderEnabled));
+      setReminderTime(editHabit.reminderTime || "08:00");
+      setUnit(editHabit.unit || "pages");
+      setTargetValue(editHabit.targetValue?.toString() || "30");
+      setAggregationType(editHabit.aggregationType || "SUM");
+      setStatusOptions(
+        editHabit.statusOptions && editHabit.statusOptions.length > 0
+          ? editHabit.statusOptions
+          : DEFAULT_STATUS_PRESETS.progress3
+      );
+    } else {
+      setType("NUMERICAL");
+      setTitle("");
+      setDescription("");
+      setCategory("General");
+      setColor("#6366F1");
+      setIcon("CheckCircle");
+      setFrequencyType("DAILY");
+      setCustomDays(["MON", "WED", "FRI"]);
+      setReminderEnabled(false);
+      setReminderTime("08:00");
+      setUnit("pages");
+      setTargetValue("30");
+      setAggregationType("SUM");
+      setStatusOptions(DEFAULT_STATUS_PRESETS.progress3);
+    }
+  }, [editHabit, isOpen]);
+
   if (!isOpen) return null;
+
+  const toggleDay = (dayKey: string) => {
+    if (customDays.includes(dayKey)) {
+      if (customDays.length <= 1) return; // Keep at least 1 day
+      setCustomDays(customDays.filter((d) => d !== dayKey));
+    } else {
+      setCustomDays([...customDays, dayKey]);
+    }
+  };
 
   const handleAddStatusOption = () => {
     const nextIdx = statusOptions.length + 1;
@@ -154,6 +244,10 @@ export function CreateHabitModal({ isOpen, onClose, onSuccess, editHabit }: Crea
         color,
         icon,
         type,
+        frequencyType,
+        frequencyDays: frequencyType === "CUSTOM_DAYS" ? customDays.join(",") : null,
+        reminderEnabled,
+        reminderTime: reminderEnabled ? reminderTime : null,
       };
 
       if (type === "NUMERICAL") {
@@ -165,8 +259,8 @@ export function CreateHabitModal({ isOpen, onClose, onSuccess, editHabit }: Crea
       }
 
       const url = editHabit
-        ? `http://localhost:3001/api/habits/${editHabit.id}`
-        : "http://localhost:3001/api/habits";
+        ? `${API_BASE_URL}/api/habits/${editHabit.id}`
+        : `${API_BASE_URL}/api/habits`;
       const method = editHabit ? "PUT" : "POST";
 
       const res = await fetch(url, {
@@ -191,21 +285,21 @@ export function CreateHabitModal({ isOpen, onClose, onSuccess, editHabit }: Crea
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl transition-all">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
+      <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800/80 rounded-3xl w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl transition-all my-8">
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-zinc-100 dark:border-zinc-800/60 sticky top-0 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-md z-10">
+        <div className="flex items-center justify-between p-6 border-b border-zinc-100 dark:border-zinc-800/60 sticky top-0 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-md z-10">
           <div>
             <h2 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
               {editHabit ? "Edit Habit" : "Create New Habit"}
             </h2>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-              {type === "NUMERICAL" ? "Track numbers, units, sums & averages" : "Track custom color-coded status states"}
+              Customize schedules (weekdays, weekends), goals, and daily reminders
             </p>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -222,7 +316,7 @@ export function CreateHabitModal({ isOpen, onClose, onSuccess, editHabit }: Crea
           {!editHabit && (
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2">
-                Habit Type
+                Habit Tracking Type
               </label>
               <div className="grid grid-cols-2 gap-3">
                 <button
@@ -236,7 +330,7 @@ export function CreateHabitModal({ isOpen, onClose, onSuccess, editHabit }: Crea
                 >
                   <div className="font-semibold text-sm">🔢 Numerical Habit</div>
                   <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-                    Quantities, units (pages, km, ml, mins), sum & avg stats
+                    Quantities, units (pages, km, mins, ml), sum & avg stats
                   </div>
                 </button>
                 <button
@@ -267,7 +361,7 @@ export function CreateHabitModal({ isOpen, onClose, onSuccess, editHabit }: Crea
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g., Read Non-Fiction Books"
+                placeholder="e.g., Go to Office, Morning Workout, Read Books"
                 className="w-full px-3.5 py-2.5 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500"
                 required
               />
@@ -280,7 +374,7 @@ export function CreateHabitModal({ isOpen, onClose, onSuccess, editHabit }: Crea
                 type="text"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                placeholder="e.g., Learning"
+                placeholder="e.g., Work, Health"
                 className="w-full px-3.5 py-2.5 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500"
               />
             </div>
@@ -300,6 +394,165 @@ export function CreateHabitModal({ isOpen, onClose, onSuccess, editHabit }: Crea
             />
           </div>
 
+          {/* Frequency & Schedule Selector (The key addition!) */}
+          <div className="p-4 bg-zinc-50 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-blue-500" />
+                <span className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
+                  Schedule & Frequency
+                </span>
+              </div>
+              <span className="text-[11px] text-zinc-400">Rest days preserve streaks</span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <button
+                type="button"
+                onClick={() => setFrequencyType("DAILY")}
+                className={`p-2.5 rounded-xl border text-center text-xs font-semibold transition-all ${
+                  frequencyType === "DAILY"
+                    ? "border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 ring-2 ring-blue-500/20"
+                    : "border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                }`}
+              >
+                Every Day
+                <div className="text-[10px] font-normal text-zinc-400 mt-0.5">7 days / week</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setFrequencyType("WEEKDAYS")}
+                className={`p-2.5 rounded-xl border text-center text-xs font-semibold transition-all ${
+                  frequencyType === "WEEKDAYS"
+                    ? "border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 ring-2 ring-blue-500/20"
+                    : "border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                }`}
+              >
+                Weekdays
+                <div className="text-[10px] font-normal text-zinc-400 mt-0.5">Mon–Fri (Work)</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setFrequencyType("WEEKENDS")}
+                className={`p-2.5 rounded-xl border text-center text-xs font-semibold transition-all ${
+                  frequencyType === "WEEKENDS"
+                    ? "border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 ring-2 ring-blue-500/20"
+                    : "border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                }`}
+              >
+                Weekends
+                <div className="text-[10px] font-normal text-zinc-400 mt-0.5">Sat–Sun only</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setFrequencyType("CUSTOM_DAYS")}
+                className={`p-2.5 rounded-xl border text-center text-xs font-semibold transition-all ${
+                  frequencyType === "CUSTOM_DAYS"
+                    ? "border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 ring-2 ring-blue-500/20"
+                    : "border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                }`}
+              >
+                Custom Days
+                <div className="text-[10px] font-normal text-zinc-400 mt-0.5">Specific days</div>
+              </button>
+            </div>
+
+            {/* Custom Day Toggles */}
+            {frequencyType === "CUSTOM_DAYS" && (
+              <div className="pt-2 border-t border-zinc-200/60 dark:border-zinc-800/60">
+                <label className="block text-[11px] text-zinc-500 dark:text-zinc-400 mb-1.5">
+                  Select Active Days for this habit:
+                </label>
+                <div className="flex items-center justify-between gap-1.5">
+                  {DAYS_OF_WEEK.map((day) => {
+                    const isSelected = customDays.includes(day.key);
+                    return (
+                      <button
+                        key={day.key}
+                        type="button"
+                        onClick={() => toggleDay(day.key)}
+                        className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
+                          isSelected
+                            ? "bg-blue-600 text-white shadow-xs scale-105"
+                            : "bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-700"
+                        }`}
+                        title={day.full}
+                      >
+                        {day.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Reminder Configuration Section */}
+          <div className="p-4 bg-zinc-50 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Bell className="w-4 h-4 text-amber-500" />
+                <span className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
+                  Daily Reminder
+                </span>
+              </div>
+              <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                <input
+                  type="checkbox"
+                  checked={reminderEnabled}
+                  onChange={(e) => setReminderEnabled(e.target.checked)}
+                  className="rounded border-zinc-300 dark:border-zinc-700 text-amber-500 focus:ring-amber-400 w-3.5 h-3.5"
+                />
+                <span>Enable Alert</span>
+              </label>
+            </div>
+
+            {reminderEnabled && (
+              <div className="pt-2 border-t border-zinc-200/60 dark:border-zinc-800/60 space-y-2.5">
+                <div className="flex items-center gap-3">
+                  <div className="flex-1">
+                    <label className="block text-[11px] text-zinc-500 dark:text-zinc-400 mb-1">
+                      Reminder Time (24h)
+                    </label>
+                    <input
+                      type="time"
+                      value={reminderTime}
+                      onChange={(e) => setReminderTime(e.target.value)}
+                      className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                  </div>
+                  {/* Preset quick buttons */}
+                  <div className="flex items-center gap-1 pt-4">
+                    <button
+                      type="button"
+                      onClick={() => setReminderTime("08:00")}
+                      className="px-2 py-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-[10px] font-medium hover:bg-zinc-100"
+                    >
+                      🌅 8:00 AM
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setReminderTime("13:00")}
+                      className="px-2 py-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-[10px] font-medium hover:bg-zinc-100"
+                    >
+                      ☀️ 1:00 PM
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setReminderTime("20:00")}
+                      className="px-2 py-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-[10px] font-medium hover:bg-zinc-100"
+                    >
+                      🌙 8:00 PM
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Color & Icon Pickers */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -313,7 +566,9 @@ export function CreateHabitModal({ isOpen, onClose, onSuccess, editHabit }: Crea
                     type="button"
                     onClick={() => setColor(c)}
                     className={`w-7 h-7 rounded-full transition-transform ${
-                      color === c ? "scale-125 ring-2 ring-offset-2 ring-zinc-900 dark:ring-white dark:ring-offset-zinc-950" : "hover:scale-110"
+                      color === c
+                        ? "scale-125 ring-2 ring-offset-2 ring-zinc-900 dark:ring-white dark:ring-offset-zinc-950"
+                        : "hover:scale-110"
                     }`}
                     style={{ backgroundColor: c }}
                   />
@@ -350,7 +605,7 @@ export function CreateHabitModal({ isOpen, onClose, onSuccess, editHabit }: Crea
 
           {/* Numerical Config */}
           {type === "NUMERICAL" && (
-            <div className="p-4 bg-zinc-50 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800/80 rounded-xl space-y-4">
+            <div className="p-4 bg-zinc-50 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
                   Numerical Settings
@@ -405,7 +660,7 @@ export function CreateHabitModal({ isOpen, onClose, onSuccess, editHabit }: Crea
 
           {/* Custom Status / Enum Config */}
           {type === "STATUS" && (
-            <div className="p-4 bg-zinc-50 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800/80 rounded-xl space-y-4">
+            <div className="p-4 bg-zinc-50 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
                   Custom Enum / Status States & Colors

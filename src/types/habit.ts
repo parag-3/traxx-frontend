@@ -1,5 +1,7 @@
 export type HabitType = 'NUMERICAL' | 'STATUS';
 export type AggregationType = 'SUM' | 'AVERAGE' | 'MAX' | 'MIN';
+export type FrequencyType = 'DAILY' | 'WEEKDAYS' | 'WEEKENDS' | 'CUSTOM_DAYS' | 'TIMES_PER_WEEK';
+export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH';
 
 export interface HabitStatusOption {
   id?: string;
@@ -26,6 +28,7 @@ export interface HabitLog {
 export interface DayHistory {
   date: string;
   isCompleted: boolean;
+  isScheduled?: boolean;
   numericValue: number | null;
   statusValue: string | null;
   color: string | null;
@@ -42,6 +45,12 @@ export interface Habit {
   unit: string | null;
   targetValue: number | null;
   aggregationType: AggregationType | null;
+  frequencyType: FrequencyType;
+  frequencyDays: string | null;
+  frequencyTarget: number | null;
+  reminderEnabled: boolean;
+  reminderTime: string | null;
+  isScheduledToday?: boolean;
   currentStreak: number;
   bestStreak: number;
   lastCompletedDate: string | null;
@@ -79,4 +88,70 @@ export interface HabitStats {
   completionRate: string;
   numericalStats: NumericalStats | null;
   statusDistribution: StatusDistributionItem[];
+}
+
+// ----------------------------------------------------
+// TASK & DAILY PLANNER TYPES
+// ----------------------------------------------------
+
+export interface Task {
+  id: string;
+  userId: string;
+  title: string;
+  description: string | null;
+  date: string;
+  isCompleted: boolean;
+  priority: TaskPriority;
+  category: string | null;
+  time: string | null;
+  reminderTime: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DailyPlanItem {
+  id: string;
+  originalId: string;
+  itemType: 'HABIT' | 'TASK';
+  title: string;
+  description: string | null;
+  category: string;
+  color: string;
+  icon: string;
+  isCompleted: boolean;
+  time: string | null;
+  reminderTime: string | null;
+  priority: string;
+  habitData?: Habit;
+  taskData?: Task;
+}
+
+export interface DailyPlanSummary {
+  totalCount: number;
+  completedCount: number;
+  completionPercentage: number;
+  habitsTotal: number;
+  habitsCompleted: number;
+  tasksTotal: number;
+  tasksCompleted: number;
+}
+
+export interface DailyPlanResponse {
+  date: string;
+  summary: DailyPlanSummary;
+  habits: Habit[];
+  tasks: Task[];
+  allItems: DailyPlanItem[];
+}
+
+export interface ReminderItem {
+  id: string;
+  sourceId: string;
+  sourceType: 'HABIT' | 'TASK';
+  title: string;
+  category: string | null;
+  color: string;
+  icon: string;
+  reminderTime: string;
+  isCompleted: boolean;
 }

@@ -3,25 +3,33 @@
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { useRouter } from "next/navigation";
-import { Habit } from "@/types/habit";
+import { Habit, Task } from "@/types/habit";
+import { API_BASE_URL } from "@/lib/api";
 import { HabitCard } from "@/components/habit-card";
 import { CreateHabitModal } from "@/components/create-habit-modal";
+import { CreateTaskModal } from "@/components/create-task-modal";
 import { HabitStatsModal } from "@/components/habit-stats-modal";
+import { DailyPlanner } from "@/components/daily-planner";
+import { ReminderBanner } from "@/components/reminder-banner";
+import { DateNavigator } from "@/components/date-navigator";
 import {
   Plus,
   Flame,
   CheckCircle2,
   Calendar,
-  ChevronLeft,
-  ChevronRight,
   Layers,
   Activity,
   Zap,
+  ListTodo,
+  LayoutGrid,
 } from "lucide-react";
 
 export default function Home() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+
+  // Active Main View Tab
+  const [activeTab, setActiveTab] = useState<"PLANNER" | "HABITS">("PLANNER");
 
   const [habits, setHabits] = useState<Habit[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,15 +45,18 @@ export default function Home() {
   const [selectedDate, setSelectedDate] = useState<string>(getTodayIso());
 
   // Modals state
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isCreateHabitOpen, setIsCreateHabitOpen] = useState(false);
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
   const [statsHabit, setStatsHabit] = useState<Habit | null>(null);
+
+  const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   // Fetch habits
   const fetchHabits = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await fetch(`http://localhost:3001/api/habits?date=${selectedDate}`, {
+      const res = await fetch(`${API_BASE_URL}/api/habits?date=${selectedDate}`, {
         credentials: "include",
       });
       if (res.ok) {
@@ -65,7 +76,7 @@ export default function Home() {
     }
   }, [user, fetchHabits]);
 
-  // Date Navigation
+  // Date Navigation handler
   const handleDateShift = (deltaDays: number) => {
     const parts = selectedDate.split("-").map(Number);
     const d = new Date(Date.UTC(parts[0] || 1970, (parts[1] || 1) - 1, parts[2] || 1));
@@ -74,12 +85,10 @@ export default function Home() {
     setSelectedDate(newDateStr);
   };
 
-  const isToday = selectedDate === getTodayIso();
-
   // Delete habit
   const handleDeleteHabit = async (habitId: string) => {
     try {
-      const res = await fetch(`http://localhost:3001/api/habits/${habitId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/habits/${habitId}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -112,7 +121,7 @@ export default function Home() {
               Welcome to traxx
             </h1>
             <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-              Track numerical goals (sums, averages) & custom status habits with real-time streaks.
+              Your unified daily to-do planner & habit tracker with customizable weekday schedules, reminders, and streaks.
             </p>
           </div>
           <div className="w-full pt-2">
@@ -128,13 +137,14 @@ export default function Home() {
     );
   }
 
-  // Compute metrics
+  // Compute metrics for habits overview
   const totalHabits = habits.length;
+  const scheduledTodayHabits = habits.filter((h) => h.isScheduledToday !== false);
   const completedToday = habits.filter((h) => h.todayLog?.isCompleted).length;
-  const completionRate = totalHabits > 0 ? Math.round((completedToday / totalHabits) * 100) : 0;
+  const completionRate = scheduledTodayHabits.length > 0 ? Math.round((completedToday / scheduledTodayHabits.length) * 100) : 0;
   const maxStreak = habits.reduce((max, h) => Math.max(max, h.currentStreak), 0);
 
-  // Filter habits
+  // Filter habits for habit grid view
   const categories = Array.from(new Set(habits.map((h) => h.category || "General")));
   const filteredHabits = habits.filter((h) => {
     if (filter !== "ALL" && h.type !== filter) return false;
@@ -144,213 +154,258 @@ export default function Home() {
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] bg-zinc-50/50 dark:bg-black font-sans text-zinc-900 dark:text-white">
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-8">
-        {/* Top Header: Greeting, Date Switcher & New Habit Button */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-7 space-y-6">
+        {/* Top App Header: Navigation Tabs & Create Buttons */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          {/* Main View Mode Navigation Tabs */}
+          <div className="flex items-center gap-2 bg-zinc-200/70 dark:bg-zinc-900 p-1.5 rounded-2xl w-fit shadow-xs">
+            <button
+              onClick={() => setActiveTab("PLANNER")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+                activeTab === "PLANNER"
+                  ? "bg-white dark:bg-zinc-950 text-blue-600 dark:text-blue-400 shadow-sm"
+                  : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+              }`}
+            >
+              <ListTodo className="w-4 h-4" />
+              <span>Today&apos;s To-Do Planner</span>
+            </button>
+            <button
+              onClick={() => setActiveTab("HABITS")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+                activeTab === "HABITS"
+                  ? "bg-white dark:bg-zinc-950 text-blue-600 dark:text-blue-400 shadow-sm"
+                  : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+              }`}
+            >
+              <LayoutGrid className="w-4 h-4" />
+              <span>Habits Dashboard</span>
+            </button>
+          </div>
+
+          {/* Quick Action Button */}
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-              Habit Tracker Dashboard
-            </h1>
-            <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-              Build lasting momentum with daily check-ins and streaks
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Date Navigator */}
-            <div className="flex items-center bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-1 shadow-sm">
+            {activeTab === "PLANNER" ? (
               <button
-                onClick={() => handleDateShift(-1)}
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-                title="Previous Day"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <div className="px-3 flex items-center gap-1.5 text-xs font-semibold">
-                <Calendar className="w-3.5 h-3.5 text-blue-500" />
-                <span>{selectedDate}</span>
-                {isToday && (
-                  <span className="text-[10px] bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 px-1.5 py-0.2 rounded-full">
-                    Today
-                  </span>
-                )}
-              </div>
-              <button
-                onClick={() => handleDateShift(1)}
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-                title="Next Day"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Create Habit Button */}
-            <button
-              onClick={() => {
-                setEditingHabit(null);
-                setIsCreateOpen(true);
-              }}
-              className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 transition-all flex items-center gap-1.5"
-            >
-              <Plus className="w-4 h-4" /> New Habit
-            </button>
-          </div>
-        </div>
-
-        {/* Overview Stats Metrics Bar */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="p-4 bg-white dark:bg-zinc-950/80 border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl shadow-sm">
-            <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs font-semibold">
-              <span>Active Habits</span>
-              <Layers className="w-4 h-4 text-blue-500" />
-            </div>
-            <div className="mt-2 text-2xl font-bold">{totalHabits}</div>
-          </div>
-
-          <div className="p-4 bg-white dark:bg-zinc-950/80 border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl shadow-sm">
-            <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs font-semibold">
-              <span>Completed Today</span>
-              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-            </div>
-            <div className="mt-2 text-2xl font-bold">
-              {completedToday} <span className="text-xs font-normal text-zinc-400">/ {totalHabits}</span>
-            </div>
-          </div>
-
-          <div className="p-4 bg-white dark:bg-zinc-950/80 border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl shadow-sm">
-            <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs font-semibold">
-              <span>Goal Success Rate</span>
-              <Activity className="w-4 h-4 text-purple-500" />
-            </div>
-            <div className="mt-2 text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-              {completionRate}%
-            </div>
-          </div>
-
-          <div className="p-4 bg-white dark:bg-zinc-950/80 border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl shadow-sm">
-            <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs font-semibold">
-              <span>Top Active Streak</span>
-              <Flame className="w-4 h-4 text-amber-500 fill-amber-500/20" />
-            </div>
-            <div className="mt-2 text-2xl font-bold text-amber-600 dark:text-amber-400">
-              {maxStreak} <span className="text-xs font-normal text-zinc-400">days</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Filter Controls & Category Tabs */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-          {/* Type Filter Pills */}
-          <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl">
-            <button
-              onClick={() => setFilter("ALL")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                filter === "ALL"
-                  ? "bg-zinc-900 dark:bg-white text-white dark:text-black shadow-sm"
-                  : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-              }`}
-            >
-              All Habits ({habits.length})
-            </button>
-            <button
-              onClick={() => setFilter("NUMERICAL")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                filter === "NUMERICAL"
-                  ? "bg-blue-600 text-white shadow-sm"
-                  : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-              }`}
-            >
-              🔢 Numerical
-            </button>
-            <button
-              onClick={() => setFilter("STATUS")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                filter === "STATUS"
-                  ? "bg-purple-600 text-white shadow-sm"
-                  : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-              }`}
-            >
-              🏷️ Custom Status / Enum
-            </button>
-          </div>
-
-          {/* Category Dropdown */}
-          {categories.length > 1 && (
-            <div className="flex items-center gap-2 text-xs">
-              <span className="text-zinc-400">Category:</span>
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-2.5 py-1.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-xs text-zinc-700 dark:text-zinc-300 focus:outline-none"
-              >
-                <option value="ALL">All Categories</option>
-                {categories.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-        </div>
-
-        {/* Habit Cards Grid */}
-        {loading && habits.length === 0 ? (
-          <div className="py-20 text-center text-sm text-zinc-400">
-            Loading your habits...
-          </div>
-        ) : filteredHabits.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {filteredHabits.map((habit) => (
-              <HabitCard
-                key={habit.id}
-                habit={habit}
-                selectedDate={selectedDate}
-                onLogUpdated={fetchHabits}
-                onOpenStats={(h) => setStatsHabit(h)}
-                onEditHabit={(h) => {
-                  setEditingHabit(h);
-                  setIsCreateOpen(true);
+                onClick={() => {
+                  setEditingTask(null);
+                  setIsCreateTaskOpen(true);
                 }}
-                onDeleteHabit={handleDeleteHabit}
-              />
-            ))}
-          </div>
-        ) : (
-          /* Empty State */
-          <div className="py-16 text-center bg-white dark:bg-zinc-950/60 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-3xl p-8 space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center mx-auto text-zinc-400">
-              <Plus className="w-6 h-6" />
-            </div>
-            <div>
-              <h3 className="font-bold text-base text-zinc-900 dark:text-white">
-                No habits found
-              </h3>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 max-w-sm mx-auto">
-                Create a numerical or custom status habit to start tracking your daily progress and building streaks!
-              </p>
-            </div>
-            <div className="pt-2">
+                className="w-full sm:w-auto px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-1.5"
+              >
+                <Plus className="w-4 h-4" /> Add Task
+              </button>
+            ) : (
               <button
                 onClick={() => {
                   setEditingHabit(null);
-                  setIsCreateOpen(true);
+                  setIsCreateHabitOpen(true);
                 }}
-                className="px-5 py-2.5 text-xs font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-colors inline-flex items-center gap-1.5"
+                className="w-full sm:w-auto px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-1.5"
               >
-                <Plus className="w-4 h-4" /> Create Your First Habit
+                <Plus className="w-4 h-4" /> New Habit
               </button>
+            )}
+          </div>
+        </div>
+
+        {/* Fast Interactive Date Navigator (Week Strip, Jump to Today, Direct Date Picker) */}
+        <DateNavigator
+          selectedDate={selectedDate}
+          onSelectDate={(newDate) => setSelectedDate(newDate)}
+        />
+
+        {/* In-App Reminder Alerts Banner */}
+        <ReminderBanner selectedDate={selectedDate} onRefresh={fetchHabits} />
+
+        {/* VIEW 1: TODAY'S UNIFIED TO-DO PLANNER */}
+        {activeTab === "PLANNER" ? (
+          <DailyPlanner
+            selectedDate={selectedDate}
+            onDateShift={handleDateShift}
+            onOpenCreateTask={() => {
+              setEditingTask(null);
+              setIsCreateTaskOpen(true);
+            }}
+            onEditTask={(task) => {
+              setEditingTask(task);
+              setIsCreateTaskOpen(true);
+            }}
+            onEditHabit={(habit) => {
+              setEditingHabit(habit);
+              setIsCreateHabitOpen(true);
+            }}
+            onOpenStats={(habit) => setStatsHabit(habit)}
+            onHabitsUpdated={fetchHabits}
+          />
+        ) : (
+          /* VIEW 2: HABITS DASHBOARD & METRICS */
+          <div className="space-y-7">
+            {/* Overview Stats Metrics Bar */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="p-4 bg-white dark:bg-zinc-950/80 border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl shadow-sm">
+                <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs font-semibold">
+                  <span>Total Habits</span>
+                  <Layers className="w-4 h-4 text-blue-500" />
+                </div>
+                <div className="mt-2 text-2xl font-bold">{totalHabits}</div>
+              </div>
+
+              <div className="p-4 bg-white dark:bg-zinc-950/80 border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl shadow-sm">
+                <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs font-semibold">
+                  <span>Due Today</span>
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                </div>
+                <div className="mt-2 text-2xl font-bold">
+                  {completedToday} <span className="text-xs font-normal text-zinc-400">/ {scheduledTodayHabits.length}</span>
+                </div>
+              </div>
+
+              <div className="p-4 bg-white dark:bg-zinc-950/80 border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl shadow-sm">
+                <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs font-semibold">
+                  <span>Schedule Success</span>
+                  <Activity className="w-4 h-4 text-purple-500" />
+                </div>
+                <div className="mt-2 text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                  {completionRate}%
+                </div>
+              </div>
+
+              <div className="p-4 bg-white dark:bg-zinc-950/80 border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl shadow-sm">
+                <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs font-semibold">
+                  <span>Top Active Streak</span>
+                  <Flame className="w-4 h-4 text-amber-500 fill-amber-500/20" />
+                </div>
+                <div className="mt-2 text-2xl font-bold text-amber-600 dark:text-amber-400">
+                  {maxStreak} <span className="text-xs font-normal text-zinc-400">days</span>
+                </div>
+              </div>
             </div>
+
+            {/* Filter Controls & Category Tabs */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+              {/* Type Filter Pills */}
+              <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl">
+                <button
+                  onClick={() => setFilter("ALL")}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                    filter === "ALL"
+                      ? "bg-zinc-900 dark:bg-white text-white dark:text-black shadow-sm"
+                      : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                  }`}
+                >
+                  All ({habits.length})
+                </button>
+                <button
+                  onClick={() => setFilter("NUMERICAL")}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                    filter === "NUMERICAL"
+                      ? "bg-blue-600 text-white shadow-sm"
+                      : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                  }`}
+                >
+                  🔢 Numerical
+                </button>
+                <button
+                  onClick={() => setFilter("STATUS")}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                    filter === "STATUS"
+                      ? "bg-purple-600 text-white shadow-sm"
+                      : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                  }`}
+                >
+                  🏷️ Status / Enum
+                </button>
+              </div>
+
+              {/* Category Dropdown */}
+              {categories.length > 1 && (
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="text-zinc-400">Category:</span>
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="px-2.5 py-1.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-xs text-zinc-700 dark:text-zinc-300 focus:outline-none"
+                  >
+                    <option value="ALL">All Categories</option>
+                    {categories.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+
+            {/* Habit Cards Grid */}
+            {loading && habits.length === 0 ? (
+              <div className="py-20 text-center text-sm text-zinc-400">
+                Loading your habits...
+              </div>
+            ) : filteredHabits.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {filteredHabits.map((habit) => (
+                  <HabitCard
+                    key={habit.id}
+                    habit={habit}
+                    selectedDate={selectedDate}
+                    onLogUpdated={fetchHabits}
+                    onOpenStats={(h) => setStatsHabit(h)}
+                    onEditHabit={(h) => {
+                      setEditingHabit(h);
+                      setIsCreateHabitOpen(true);
+                    }}
+                    onDeleteHabit={handleDeleteHabit}
+                  />
+                ))}
+              </div>
+            ) : (
+              /* Empty State */
+              <div className="py-16 text-center bg-white dark:bg-zinc-950/60 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-3xl p-8 space-y-4">
+                <div className="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center mx-auto text-zinc-400">
+                  <Plus className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base text-zinc-900 dark:text-white">
+                    No habits found
+                  </h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 max-w-sm mx-auto">
+                    Define habits with custom weekday schedules, target values, or status states.
+                  </p>
+                </div>
+                <div className="pt-2">
+                  <button
+                    onClick={() => {
+                      setEditingHabit(null);
+                      setIsCreateHabitOpen(true);
+                    }}
+                    className="px-5 py-2.5 text-xs font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-colors inline-flex items-center gap-1.5"
+                  >
+                    <Plus className="w-4 h-4" /> Create Your First Habit
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </main>
 
       {/* Create / Edit Habit Modal */}
       <CreateHabitModal
-        isOpen={isCreateOpen}
-        onClose={() => setIsCreateOpen(false)}
+        isOpen={isCreateHabitOpen}
+        onClose={() => setIsCreateHabitOpen(false)}
         onSuccess={fetchHabits}
         editHabit={editingHabit}
+      />
+
+      {/* Create / Edit Custom Task Modal */}
+      <CreateTaskModal
+        isOpen={isCreateTaskOpen}
+        onClose={() => setIsCreateTaskOpen(false)}
+        onSuccess={fetchHabits}
+        selectedDate={selectedDate}
+        editTask={editingTask}
       />
 
       {/* Detailed Stats & Calendar Heatmap Modal */}

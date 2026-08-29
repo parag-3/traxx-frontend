@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { API_BASE_URL } from "@/lib/api";
 
 export interface User {
   id?: string;
@@ -29,7 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchSession = useCallback(async () => {
     try {
-      const res = await fetch("http://localhost:3001/api/auth/me", { credentials: "include" });
+      const res = await fetch(`${API_BASE_URL}/api/auth/me`, { credentials: "include" });
       if (!res.ok) throw new Error("Not logged in");
       const data = await res.json();
       setUser(data.user);
@@ -46,7 +47,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      await fetch("http://localhost:3001/api/auth/logout", {
+      await fetch(`${API_BASE_URL}/api/auth/logout`, {
         method: "POST",
         credentials: "include",
       });

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Habit } from "@/types/habit";
+import { API_BASE_URL } from "@/lib/api";
 import {
   Flame,
   Trophy,
@@ -21,6 +22,10 @@ import {
   Brain,
   Coffee,
   Activity,
+  Calendar,
+  Clock,
+  RotateCcw,
+  X,
 } from "lucide-react";
 
 interface HabitCardProps {
@@ -64,18 +69,20 @@ export function HabitCard({
 
   // Compute numerical progress
   const currentVal = todayLog?.numericValue ?? 0;
+  const hasNumericalLog = todayLog?.numericValue !== null && todayLog?.numericValue !== undefined;
   const target = habit.targetValue ?? 1;
   const progressPercent = Math.min(100, Math.round((currentVal / target) * 100));
 
   // Current status option
   const currentStatusVal = todayLog?.statusValue;
+  const hasStatusLog = Boolean(currentStatusVal);
   const currentOption = habit.statusOptions.find((o) => o.value === currentStatusVal) || habit.statusOptions[0];
 
   // Helper to send log to API
-  const sendLog = async (payload: { numericValue?: number | null; statusValue?: string | null }) => {
+  const sendLog = async (payload: { numericValue?: number | null; statusValue?: string | null; clear?: boolean }) => {
     try {
       setLogging(true);
-      const res = await fetch(`http://localhost:3001/api/habits/${habit.id}/log`, {
+      const res = await fetch(`${API_BASE_URL}/api/habits/${habit.id}/log`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -94,18 +101,31 @@ export function HabitCard({
     }
   };
 
+  // Clear / Reset today's log
+  const handleClearLog = () => {
+    sendLog({ clear: true, numericValue: null, statusValue: null });
+  };
+
   // Numerical Quick Increment
   const handleNumericStep = (delta: number) => {
     const nextVal = Math.max(0, currentVal + delta);
-    sendLog({ numericValue: nextVal });
+    if (nextVal === 0 && delta < 0) {
+      handleClearLog();
+    } else {
+      sendLog({ numericValue: nextVal });
+    }
   };
 
   const handleCustomNumericSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (customValue === "") return;
     const num = parseFloat(customValue);
-    if (!isNaN(num) && num >= 0) {
-      sendLog({ numericValue: num });
+    if (!isNaN(num)) {
+      if (num <= 0) {
+        handleClearLog();
+      } else {
+        sendLog({ numericValue: num });
+      }
       setShowInput(false);
       setCustomValue("");
     }
@@ -114,17 +134,41 @@ export function HabitCard({
   // Status Cycle
   const handleCycleStatus = () => {
     if (habit.statusOptions.length === 0) return;
+    if (!hasStatusLog) {
+      // First state
+      sendLog({ statusValue: habit.statusOptions[0]?.value });
+      return;
+    }
     const currentIdx = habit.statusOptions.findIndex((o) => o.value === currentStatusVal);
-    const nextIdx = (currentIdx + 1) % habit.statusOptions.length;
-    const nextOpt = habit.statusOptions[nextIdx];
-    if (nextOpt) {
-      sendLog({ statusValue: nextOpt.value });
+    if (currentIdx === habit.statusOptions.length - 1) {
+      // Reached the end -> cycle to clear / unlogged!
+      handleClearLog();
+    } else {
+      const nextOpt = habit.statusOptions[currentIdx + 1];
+      if (nextOpt) {
+        sendLog({ statusValue: nextOpt.value });
+      }
     }
   };
 
   const handleSelectStatus = (optValue: string) => {
-    sendLog({ statusValue: optValue });
+    if (currentStatusVal === optValue) {
+      // Clicking already active status clears it!
+      handleClearLog();
+    } else {
+      sendLog({ statusValue: optValue });
+    }
   };
+
+  // Frequency Label formatting
+  let freqLabel = "Every Day";
+  if (habit.frequencyType === "WEEKDAYS") freqLabel = "Mon–Fri";
+  if (habit.frequencyType === "WEEKENDS") freqLabel = "Sat–Sun";
+  if (habit.frequencyType === "CUSTOM_DAYS" && habit.frequencyDays) freqLabel = habit.frequencyDays;
+  if (habit.frequencyType === "TIMES_PER_WEEK") freqLabel = `${habit.frequencyTarget}x/week`;
+
+  const isRestDay = habit.isScheduledToday === false;
+  const isLoggedToday = habit.type === "NUMERICAL" ? hasNumericalLog && currentVal > 0 : hasStatusLog;
 
   return (
     <div className="relative group bg-white dark:bg-zinc-950/80 border border-zinc-200/90 dark:border-zinc-800/80 hover:border-zinc-300 dark:hover:border-zinc-700/80 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between">
@@ -141,9 +185,23 @@ export function HabitCard({
             </div>
 
             <div>
-              <span className="text-[11px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
-                {habit.category || "General"}
-              </span>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-[11px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
+                  {habit.category || "General"}
+                </span>
+                {/* Frequency Badge */}
+                <span className="text-[10px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1 bg-zinc-50 dark:bg-zinc-900 px-1.5 py-0.5 rounded-md border border-zinc-200/60 dark:border-zinc-800">
+                  <Calendar className="w-2.5 h-2.5 text-blue-500" />
+                  {freqLabel}
+                </span>
+                {/* Rest Day Indicator */}
+                {isRestDay && (
+                  <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded-md">
+                    🌿 Rest Day
+                  </span>
+                )}
+              </div>
+
               <h3 className="font-bold text-base text-zinc-900 dark:text-white mt-1 leading-snug">
                 {habit.title}
               </h3>
@@ -160,7 +218,7 @@ export function HabitCard({
             </button>
 
             {menuOpen && (
-              <div className="absolute right-0 mt-1 w-36 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xl py-1 z-20 animate-in fade-in slide-in-from-top-1 text-xs">
+              <div className="absolute right-0 mt-1 w-40 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xl py-1 z-20 animate-in fade-in slide-in-from-top-1 text-xs">
                 <button
                   onClick={() => {
                     setMenuOpen(false);
@@ -179,6 +237,17 @@ export function HabitCard({
                 >
                   <Edit2 className="w-3.5 h-3.5 text-amber-500" /> Edit Habit
                 </button>
+                {isLoggedToday && (
+                  <button
+                    onClick={() => {
+                      setMenuOpen(false);
+                      handleClearLog();
+                    }}
+                    className="flex items-center gap-2 w-full px-3 py-2 text-amber-600 dark:text-amber-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-t border-zinc-100 dark:border-zinc-800"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" /> Clear Today&apos;s Log
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     setMenuOpen(false);
@@ -201,8 +270,8 @@ export function HabitCard({
           </p>
         )}
 
-        {/* Streaks Badges */}
-        <div className="flex items-center gap-2 mt-3.5">
+        {/* Streaks Badges & Reminder */}
+        <div className="flex items-center gap-2 mt-3.5 flex-wrap">
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-semibold">
             <Flame className="w-3.5 h-3.5 text-amber-500 fill-amber-500/30" />
             <span>
@@ -215,6 +284,12 @@ export function HabitCard({
               {habit.bestStreak} <span className="font-normal text-[10px]">best</span>
             </span>
           </div>
+          {habit.reminderEnabled && habit.reminderTime && (
+            <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 text-[11px] font-medium">
+              <Clock className="w-3 h-3 text-amber-500" />
+              <span>{habit.reminderTime}</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -222,14 +297,25 @@ export function HabitCard({
       <div className="mt-5 pt-4 border-t border-zinc-100 dark:border-zinc-800/60">
         {habit.type === "NUMERICAL" ? (
           <div className="space-y-2.5">
-            {/* Progress Label */}
+            {/* Progress Label & Clear Action */}
             <div className="flex items-center justify-between text-xs">
               <span className="font-medium text-zinc-500 dark:text-zinc-400">
                 Progress: <strong className="text-zinc-900 dark:text-white font-bold">{currentVal}</strong> / {habit.targetValue} {habit.unit}
               </span>
-              <span className="font-bold text-zinc-800 dark:text-zinc-200">
-                {progressPercent}%
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-zinc-800 dark:text-zinc-200">
+                  {progressPercent}%
+                </span>
+                {isLoggedToday && (
+                  <button
+                    onClick={handleClearLog}
+                    className="text-[10px] text-zinc-400 hover:text-red-500 dark:hover:text-red-400 flex items-center gap-0.5 hover:underline transition-colors"
+                    title="Reset back to 0 / clear entry"
+                  >
+                    <RotateCcw className="w-2.5 h-2.5" /> Clear
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Progress Bar */}
@@ -290,12 +376,14 @@ export function HabitCard({
                   </button>
                 </form>
               ) : (
-                <button
-                  onClick={() => setShowInput(true)}
-                  className="text-xs text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 underline decoration-dotted"
-                >
-                  Set custom
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setShowInput(true)}
+                    className="text-xs text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 underline decoration-dotted"
+                  >
+                    Set custom
+                  </button>
+                </div>
               )}
             </div>
           </div>
@@ -304,7 +392,17 @@ export function HabitCard({
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 mb-1">
               <span>Today&apos;s Status:</span>
-              <span className="text-[11px] text-zinc-400">Click to change</span>
+              {hasStatusLog ? (
+                <button
+                  onClick={handleClearLog}
+                  className="text-[11px] text-zinc-400 hover:text-red-500 dark:hover:text-red-400 flex items-center gap-0.5 hover:underline"
+                  title="Clear today's status selection"
+                >
+                  <X className="w-3 h-3" /> Clear selection
+                </button>
+              ) : (
+                <span className="text-[11px] text-zinc-400">Click to select</span>
+              )}
             </div>
 
             {/* Dynamic Status Button with Custom State Color */}
@@ -314,25 +412,25 @@ export function HabitCard({
                 disabled={logging}
                 className="flex-1 py-2.5 px-3.5 rounded-xl font-bold text-xs flex items-center justify-between shadow-sm transition-all duration-200 hover:scale-[1.02] active:scale-95"
                 style={{
-                  backgroundColor: currentOption ? `${currentOption.color}20` : "#94A3B820",
-                  borderColor: currentOption ? currentOption.color : "#94A3B8",
+                  backgroundColor: hasStatusLog && currentOption ? `${currentOption.color}20` : "#94A3B815",
+                  borderColor: hasStatusLog && currentOption ? currentOption.color : "#94A3B840",
                   borderWidth: "1.5px",
-                  color: currentOption ? currentOption.color : "#94A3B8",
+                  color: hasStatusLog && currentOption ? currentOption.color : "#94A3B8",
                 }}
               >
                 <span className="flex items-center gap-2">
                   <span
                     className="w-2.5 h-2.5 rounded-full"
-                    style={{ backgroundColor: currentOption?.color || "#94A3B8" }}
+                    style={{ backgroundColor: hasStatusLog && currentOption ? currentOption.color : "#94A3B8" }}
                   />
-                  <span>{currentOption?.label || "Select Status"}</span>
+                  <span>{hasStatusLog && currentOption ? currentOption.label : "Not Logged (Click to Set)"}</span>
                 </span>
-                <span className="text-[10px] opacity-70 font-normal">Next ➔</span>
+                <span className="text-[10px] opacity-70 font-normal">Cycle ➔</span>
               </button>
             </div>
 
-            {/* Status pills selector for instant choice */}
-            <div className="flex flex-wrap gap-1 pt-1">
+            {/* Status pills selector for instant choice (clicking active pill deselects/clears it) */}
+            <div className="flex flex-wrap items-center gap-1 pt-1">
               {habit.statusOptions.map((opt) => {
                 const isSelected = currentStatusVal === opt.value;
                 return (
@@ -349,11 +447,22 @@ export function HabitCard({
                       color: isSelected ? "#FFFFFF" : opt.color,
                       borderColor: isSelected ? opt.color : undefined,
                     }}
+                    title={isSelected ? "Click to clear/unselect" : `Select ${opt.label}`}
                   >
-                    {opt.label}
+                    {isSelected ? `✓ ${opt.label}` : opt.label}
                   </button>
                 );
               })}
+
+              {hasStatusLog && (
+                <button
+                  onClick={handleClearLog}
+                  className="px-2 py-1 rounded-md text-[10px] font-medium text-zinc-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                  title="Clear status log"
+                >
+                  ✕ Clear
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -377,16 +486,22 @@ export function HabitCard({
                 <div
                   key={idx}
                   className="flex flex-col items-center gap-0.5"
-                  title={`${day.date}: ${day.isCompleted ? "Completed" : "Not completed"}`}
+                  title={`${day.date}: ${day.isCompleted ? "Completed" : day.isScheduled === false ? "Rest Day" : "Not completed"}`}
                 >
                   <span
-                    className="w-3.5 h-3.5 rounded-full transition-transform hover:scale-125"
+                    className="w-3.5 h-3.5 rounded-full transition-transform hover:scale-125 flex items-center justify-center"
                     style={{
                       backgroundColor: day.isCompleted || (habit.type === "STATUS" && day.color) ? dotBg : undefined,
                     }}
                   >
                     {!day.isCompleted && !day.color && (
-                      <span className="block w-full h-full rounded-full bg-zinc-200 dark:bg-zinc-800" />
+                      <span
+                        className={`block w-full h-full rounded-full ${
+                          day.isScheduled === false
+                            ? "bg-zinc-100 dark:bg-zinc-900 border border-dashed border-zinc-300 dark:border-zinc-700"
+                            : "bg-zinc-200 dark:bg-zinc-800"
+                        }`}
+                      />
                     )}
                   </span>
                   <span className="text-[8px] text-zinc-400">{dayLetter}</span>
