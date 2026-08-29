@@ -241,7 +241,7 @@ export function HabitStatsModal({ habit, isOpen, onClose, onHabitUpdated }: Habi
                 </span>
               </div>
               <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                {habit.category || "General"} • Interactive Calendar & Analytics
+                {habit.category || "General"} • Started {habit.startDate} • Interactive Calendar & Analytics
               </p>
             </div>
           </div>

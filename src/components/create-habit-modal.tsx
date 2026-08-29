@@ -86,12 +86,18 @@ const DEFAULT_STATUS_PRESETS = {
 };
 
 export function CreateHabitModal({ isOpen, onClose, onSuccess, editHabit }: CreateHabitModalProps) {
+  const getTodayIso = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  };
+
   const [type, setType] = useState<HabitType>(editHabit?.type || "NUMERICAL");
   const [title, setTitle] = useState(editHabit?.title || "");
   const [description, setDescription] = useState(editHabit?.description || "");
   const [category, setCategory] = useState(editHabit?.category || "General");
   const [color, setColor] = useState(editHabit?.color || "#6366F1");
   const [icon, setIcon] = useState(editHabit?.icon || "CheckCircle");
+  const [startDate, setStartDate] = useState(editHabit?.startDate || getTodayIso());
 
   // Frequency & Schedule fields
   const [frequencyType, setFrequencyType] = useState<FrequencyType>(editHabit?.frequencyType || "DAILY");
@@ -126,6 +132,7 @@ export function CreateHabitModal({ isOpen, onClose, onSuccess, editHabit }: Crea
       setCategory(editHabit.category || "General");
       setColor(editHabit.color);
       setIcon(editHabit.icon);
+      setStartDate(editHabit.startDate || getTodayIso());
       setFrequencyType(editHabit.frequencyType || "DAILY");
       setCustomDays(
         editHabit.frequencyDays
@@ -149,6 +156,7 @@ export function CreateHabitModal({ isOpen, onClose, onSuccess, editHabit }: Crea
       setCategory("General");
       setColor("#6366F1");
       setIcon("CheckCircle");
+      setStartDate(getTodayIso());
       setFrequencyType("DAILY");
       setCustomDays(["MON", "WED", "FRI"]);
       setReminderEnabled(false);
@@ -217,6 +225,11 @@ export function CreateHabitModal({ isOpen, onClose, onSuccess, editHabit }: Crea
       return;
     }
 
+    if (!startDate) {
+      setError("Please select a mandatory start date for this habit");
+      return;
+    }
+
     if (type === "NUMERICAL") {
       if (!unit.trim()) {
         setError("Please provide a unit for numerical habits (e.g. pages, km, mins, ml)");
@@ -244,6 +257,7 @@ export function CreateHabitModal({ isOpen, onClose, onSuccess, editHabit }: Crea
         color,
         icon,
         type,
+        startDate: startDate || getTodayIso(),
         frequencyType,
         frequencyDays: frequencyType === "CUSTOM_DAYS" ? customDays.join(",") : null,
         reminderEnabled,
@@ -392,6 +406,62 @@ export function CreateHabitModal({ isOpen, onClose, onSuccess, editHabit }: Crea
               placeholder="Why this habit matters..."
               className="w-full px-3.5 py-2.5 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500"
             />
+          </div>
+
+          {/* Mandatory Habit Start Date */}
+          <div className="p-4 bg-zinc-50 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl space-y-2.5">
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
+                <Calendar className="w-4 h-4 text-emerald-500" />
+                <span>Habit Start Date *</span>
+              </label>
+              <span className="text-[11px] text-zinc-400">Streaks begin from this date</span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                required
+                className="px-3.5 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm font-semibold text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 shadow-xs"
+              />
+
+              {/* Quick Presets */}
+              <button
+                type="button"
+                onClick={() => setStartDate(getTodayIso())}
+                className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 transition-colors"
+              >
+                Today
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const d = new Date();
+                  d.setDate(d.getDate() - 1);
+                  setStartDate(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`);
+                }}
+                className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 transition-colors"
+              >
+                Yesterday
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const d = new Date();
+                  setStartDate(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`);
+                }}
+                className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 transition-colors"
+              >
+                1st of this month
+              </button>
+            </div>
+            <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+              Days prior to this start date are not considered scheduled, so they will never break or penalize your streak.
+            </p>
           </div>
 
           {/* Frequency & Schedule Selector (The key addition!) */}

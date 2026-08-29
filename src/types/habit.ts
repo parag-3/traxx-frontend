@@ -45,6 +45,7 @@ export interface Habit {
   unit: string | null;
   targetValue: number | null;
   aggregationType: AggregationType | null;
+  startDate: string;
   frequencyType: FrequencyType;
   frequencyDays: string | null;
   frequencyTarget: number | null;

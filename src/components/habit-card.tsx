@@ -194,6 +194,12 @@ export function HabitCard({
                   <Calendar className="w-2.5 h-2.5 text-blue-500" />
                   {freqLabel}
                 </span>
+                {/* Start Date Tag */}
+                {habit.startDate && (
+                  <span className="text-[10px] text-zinc-400 dark:text-zinc-500 hidden sm:inline">
+                    Since {habit.startDate}
+                  </span>
+                )}
                 {/* Rest Day Indicator */}
                 {isRestDay && (
                   <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded-md">
