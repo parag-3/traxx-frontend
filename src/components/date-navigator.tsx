@@ -1,22 +1,31 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   Calendar,
   ChevronLeft,
   ChevronRight,
-  Sparkles,
-  RotateCcw,
   Zap,
+  CheckCircle2,
+  Sparkles,
 } from "lucide-react";
+import { API_BASE_URL } from "@/lib/api";
 
 interface DateNavigatorProps {
   selectedDate: string;
   onSelectDate: (dateStr: string) => void;
+  refreshTrigger?: any;
 }
 
-export function DateNavigator({ selectedDate, onSelectDate }: DateNavigatorProps) {
+interface DayStat {
+  totalCount: number;
+  completedCount: number;
+  percentage: number;
+}
+
+export function DateNavigator({ selectedDate, onSelectDate, refreshTrigger }: DateNavigatorProps) {
   const dateInputRef = useRef<HTMLInputElement>(null);
+  const [weekStats, setWeekStats] = useState<Record<string, DayStat>>({});
 
   const getTodayIso = () => {
     const d = new Date();
@@ -51,13 +60,13 @@ export function DateNavigator({ selectedDate, onSelectDate }: DateNavigatorProps
     handleShiftDays(deltaWeeks * 7);
   };
 
-  // Build the 7 days centered around selectedDate or current week
+  // Build the 7 days centered around selectedDate's week
   const getWeekDays = () => {
     const parts = selectedDate.split("-").map(Number);
     const baseDate = new Date(Date.UTC(parts[0] || 1970, (parts[1] || 1) - 1, parts[2] || 1));
     const dayOfWeek = baseDate.getUTCDay(); // 0 = Sunday, 1 = Monday ...
 
-    // Start on Sunday or Monday of this week
+    // Start on Sunday of this week
     const startOfWeek = new Date(baseDate.getTime());
     startOfWeek.setUTCDate(startOfWeek.getUTCDate() - dayOfWeek);
 
@@ -79,10 +88,35 @@ export function DateNavigator({ selectedDate, onSelectDate }: DateNavigatorProps
 
   const weekDays = getWeekDays();
 
+  // Fetch completion stats for the current 7-day week
+  const fetchWeekStats = useCallback(async () => {
+    if (weekDays.length < 7) return;
+    const startIso = weekDays[0]?.iso;
+    const endIso = weekDays[6]?.iso;
+    if (!startIso || !endIso) return;
+
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/api/daily-plan/week-stats?startDate=${startIso}&endDate=${endIso}`,
+        { credentials: "include" }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setWeekStats(data.stats || {});
+      }
+    } catch (err) {
+      console.error("Failed to fetch week stats", err);
+    }
+  }, [weekDays[0]?.iso, weekDays[6]?.iso]);
+
+  useEffect(() => {
+    fetchWeekStats();
+  }, [fetchWeekStats, refreshTrigger]);
+
   return (
-    <div className="bg-white dark:bg-zinc-950 border border-zinc-200/90 dark:border-zinc-800/80 rounded-2xl p-2.5 shadow-sm space-y-2">
-      {/* Top row: Week Controls, Date Label, Jump to Today, Direct Date Picker */}
-      <div className="flex flex-wrap items-center justify-between gap-2 px-1">
+    <div className="bg-white dark:bg-zinc-950 border border-zinc-200/90 dark:border-zinc-800/80 rounded-3xl p-4 shadow-sm space-y-3.5">
+      {/* Top row: Direct Picker, Day Shift, Jump to Today, Week Shift */}
+      <div className="flex flex-wrap items-center justify-between gap-3 px-1">
         {/* Left: Date Display & Direct Picker Trigger */}
         <div className="flex items-center gap-2">
           {/* Native Hidden Date Picker input triggered on click */}
@@ -99,60 +133,60 @@ export function DateNavigator({ selectedDate, onSelectDate }: DateNavigatorProps
             />
             <button
               type="button"
-              className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-900 dark:text-white transition-colors cursor-pointer"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-900 dark:text-white transition-colors cursor-pointer shadow-xs"
             >
               <Calendar className="w-4 h-4 text-blue-500" />
-              <span className="text-xs font-bold">{formatDateLabel(selectedDate)}</span>
-              <span className="text-[10px] text-zinc-400 font-normal">({selectedDate})</span>
+              <span className="text-xs sm:text-sm font-bold">{formatDateLabel(selectedDate)}</span>
+              <span className="text-[10px] text-zinc-400 font-normal hidden sm:inline">({selectedDate})</span>
             </button>
           </div>
 
-          {/* Quick Step Buttons */}
-          <div className="flex items-center bg-zinc-100 dark:bg-zinc-900 rounded-lg p-0.5">
+          {/* Quick Step Day Buttons */}
+          <div className="flex items-center bg-zinc-100 dark:bg-zinc-900 rounded-xl p-0.5 shadow-xs">
             <button
               type="button"
               onClick={() => handleShiftDays(-1)}
-              className="w-7 h-7 rounded-md flex items-center justify-center text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-white dark:hover:bg-zinc-800 transition-colors"
-              title="Previous Day (Left arrow)"
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-white dark:hover:bg-zinc-800 transition-colors"
+              title="Previous Day"
             >
-              <ChevronLeft className="w-3.5 h-3.5" />
+              <ChevronLeft className="w-4 h-4" />
             </button>
             <button
               type="button"
               onClick={() => handleShiftDays(1)}
-              className="w-7 h-7 rounded-md flex items-center justify-center text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-white dark:hover:bg-zinc-800 transition-colors"
-              title="Next Day (Right arrow)"
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-white dark:hover:bg-zinc-800 transition-colors"
+              title="Next Day"
             >
-              <ChevronRight className="w-3.5 h-3.5" />
+              <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         </div>
 
         {/* Right: Quick Jump Presets & Today button */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           {/* Quick Jump: Today Button */}
           {!isToday ? (
             <button
               type="button"
               onClick={() => onSelectDate(todayIso)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm transition-all animate-pulse"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-500/20 transition-all animate-pulse"
               title="Jump to Today's date"
             >
               <Zap className="w-3.5 h-3.5" />
               <span>Jump to Today</span>
             </button>
           ) : (
-            <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 px-2.5 py-1 rounded-xl">
+            <span className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 px-3 py-1.5 rounded-xl border border-blue-200/60 dark:border-blue-900/40">
               ⚡ Today
             </span>
           )}
 
           {/* Week Shift Prev / Next */}
-          <div className="flex items-center gap-1 text-[11px] text-zinc-400">
+          <div className="flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
             <button
               type="button"
               onClick={() => handleShiftWeek(-1)}
-              className="px-2 py-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
+              className="px-2.5 py-1.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors font-medium"
               title="Previous Week (-7 days)"
             >
               &larr; Prev Week
@@ -160,7 +194,7 @@ export function DateNavigator({ selectedDate, onSelectDate }: DateNavigatorProps
             <button
               type="button"
               onClick={() => handleShiftWeek(1)}
-              className="px-2 py-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
+              className="px-2.5 py-1.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors font-medium"
               title="Next Week (+7 days)"
             >
               Next Week &rarr;
@@ -169,42 +203,134 @@ export function DateNavigator({ selectedDate, onSelectDate }: DateNavigatorProps
         </div>
       </div>
 
-      {/* Bottom row: Interactive 7-Day Week Strip */}
-      <div className="grid grid-cols-7 gap-1.5 pt-1 border-t border-zinc-100 dark:border-zinc-900">
-        {weekDays.map((day) => (
-          <button
-            key={day.iso}
-            type="button"
-            onClick={() => onSelectDate(day.iso)}
-            className={`py-2 px-1 rounded-xl flex flex-col items-center justify-center transition-all ${
-              day.isSelected
-                ? "bg-blue-600 text-white shadow-md shadow-blue-500/20 scale-[1.03]"
-                : day.isToday
-                ? "bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800"
-                : "bg-zinc-50/60 dark:bg-zinc-900/60 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-            }`}
-          >
-            <span
-              className={`text-[10px] uppercase font-bold tracking-wider ${
+      {/* Bottom row: Interactive 7-Day Liquid Bucket / Heatmap Strip */}
+      <div className="grid grid-cols-7 gap-2 pt-1 border-t border-zinc-100 dark:border-zinc-900">
+        {weekDays.map((day) => {
+          const stat = weekStats[day.iso] || { totalCount: 0, completedCount: 0, percentage: 0 };
+          const percent = stat.percentage;
+          const hasItems = stat.totalCount > 0;
+          const is100 = percent === 100 && hasItems;
+
+          return (
+            <button
+              key={day.iso}
+              type="button"
+              onClick={() => onSelectDate(day.iso)}
+              className={`relative overflow-hidden min-h-[5.2rem] sm:min-h-[5.8rem] rounded-2xl flex flex-col justify-between p-2 sm:p-2.5 transition-all duration-200 text-center ${
                 day.isSelected
-                  ? "text-blue-100"
-                  : day.isToday
-                  ? "text-blue-600 dark:text-blue-400"
-                  : "text-zinc-400"
+                  ? "ring-2 ring-blue-600 dark:ring-blue-400 ring-offset-2 dark:ring-offset-black scale-[1.03] shadow-md z-10"
+                  : "hover:scale-[1.02] border border-zinc-200/80 dark:border-zinc-800/80 hover:border-zinc-300 dark:hover:border-zinc-700 shadow-xs"
+              } ${
+                is100
+                  ? "bg-emerald-50/80 dark:bg-emerald-950/30"
+                  : percent >= 50
+                  ? "bg-emerald-50/40 dark:bg-emerald-950/20"
+                  : "bg-zinc-50/60 dark:bg-zinc-900/40"
               }`}
+              title={`${day.iso}: ${stat.completedCount}/${stat.totalCount} completed (${percent}%)`}
             >
-              {day.dayName}
-            </span>
-            <span className="text-sm font-black mt-0.5">{day.dayNum}</span>
-            {day.isToday && (
-              <span
-                className={`w-1 h-1 rounded-full mt-0.5 ${
-                  day.isSelected ? "bg-white" : "bg-blue-500"
-                }`}
-              />
-            )}
-          </button>
-        ))}
+              {/* Liquid Bucket Fill Layer rising from bottom */}
+              {hasItems && percent > 0 && (
+                <div
+                  className={`absolute inset-x-0 bottom-0 transition-all duration-500 ease-out pointer-events-none ${
+                    is100
+                      ? "bg-gradient-to-t from-emerald-500/50 via-emerald-400/40 to-emerald-400/25 dark:from-emerald-600/40 dark:to-emerald-500/20 border-t-2 border-emerald-500/70"
+                      : percent >= 70
+                      ? "bg-gradient-to-t from-emerald-500/35 to-emerald-400/20 dark:from-emerald-600/30 dark:to-emerald-500/15 border-t-2 border-emerald-500/50"
+                      : "bg-gradient-to-t from-emerald-500/25 to-emerald-400/10 dark:from-emerald-600/20 dark:to-emerald-500/10 border-t border-emerald-500/30"
+                  }`}
+                  style={{ height: `${percent}%` }}
+                />
+              )}
+
+              {/* Top: Day Name + Today Indicator */}
+              <div className="relative z-10 flex items-center justify-between w-full">
+                <span
+                  className={`text-[10px] sm:text-[11px] uppercase font-black tracking-wider ${
+                    day.isSelected
+                      ? "text-blue-600 dark:text-blue-400"
+                      : day.isToday
+                      ? "text-blue-600 dark:text-blue-400"
+                      : "text-zinc-500 dark:text-zinc-400"
+                  }`}
+                >
+                  {day.dayName}
+                </span>
+
+                {day.isToday && (
+                  <span
+                    className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-sm"
+                    title="Today"
+                  />
+                )}
+              </div>
+
+              {/* Middle: Date Number */}
+              <div className="relative z-10 my-0.5">
+                <span
+                  className={`text-base sm:text-lg font-black tracking-tight ${
+                    day.isSelected
+                      ? "text-zinc-900 dark:text-white"
+                      : is100
+                      ? "text-emerald-700 dark:text-emerald-300 font-extrabold"
+                      : "text-zinc-800 dark:text-zinc-200"
+                  }`}
+                >
+                  {day.dayNum}
+                </span>
+              </div>
+
+              {/* Bottom: Completion Heatmap Percentage / Badge */}
+              <div className="relative z-10 flex items-center justify-center w-full">
+                {hasItems ? (
+                  is100 ? (
+                    <span className="inline-flex items-center gap-0.5 text-[9px] sm:text-[10px] font-black px-1.5 py-0.5 rounded-md bg-emerald-500 text-white shadow-xs">
+                      ✓ 100%
+                    </span>
+                  ) : percent > 0 ? (
+                    <span className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400">
+                      {percent}%
+                    </span>
+                  ) : (
+                    <span className="text-[9px] sm:text-[10px] font-medium text-zinc-400 px-1">
+                      0%
+                    </span>
+                  )
+                ) : (
+                  <span className="text-[9px] text-zinc-300 dark:text-zinc-600 font-light">
+                    -
+                  </span>
+                )}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Heatmap Legend */}
+      <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[10px] text-zinc-400 px-1">
+        <span className="font-medium flex items-center gap-1">
+          <Sparkles className="w-3 h-3 text-emerald-500" />
+          <span>Daily Completion Heatmap</span>
+        </span>
+        <div className="flex items-center gap-2">
+          <span className="flex items-center gap-1">
+            <span className="w-2.5 h-2.5 rounded-sm bg-zinc-200 dark:bg-zinc-800" />
+            <span>0%</span>
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-2.5 h-2.5 rounded-sm bg-emerald-200/80 dark:bg-emerald-950" />
+            <span>1-49%</span>
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-2.5 h-2.5 rounded-sm bg-emerald-400/80 dark:bg-emerald-700" />
+            <span>50-99%</span>
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 text-white font-bold flex items-center justify-center text-[7px]">✓</span>
+            <span className="font-semibold text-emerald-600 dark:text-emerald-400">100%</span>
+          </span>
+        </div>
       </div>
     </div>
   );

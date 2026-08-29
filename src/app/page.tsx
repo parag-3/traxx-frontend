@@ -209,10 +209,11 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Fast Interactive Date Navigator (Week Strip, Jump to Today, Direct Date Picker) */}
+        {/* Fast Interactive Date Navigator (Week Strip with Liquid Heatmap, Jump to Today, Direct Date Picker) */}
         <DateNavigator
           selectedDate={selectedDate}
           onSelectDate={(newDate) => setSelectedDate(newDate)}
+          refreshTrigger={habits}
         />
 
         {/* In-App Reminder Alerts Banner */}
