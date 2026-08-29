@@ -32,7 +32,10 @@ import {
   Check,
   RotateCcw,
   X,
+  Timer,
+  Play,
 } from "lucide-react";
+import { TimerTarget } from "@/types/habit";
 
 interface DailyPlannerProps {
   selectedDate: string;
@@ -42,6 +45,7 @@ interface DailyPlannerProps {
   onEditHabit: (habit: Habit) => void;
   onOpenStats: (habit: Habit) => void;
   onHabitsUpdated?: () => void;
+  onOpenTimer?: (target: TimerTarget) => void;
 }
 
 const ICON_MAP: Record<string, any> = {
@@ -66,6 +70,7 @@ export function DailyPlanner({
   onEditHabit,
   onOpenStats,
   onHabitsUpdated,
+  onOpenTimer,
 }: DailyPlannerProps) {
   const [data, setData] = useState<DailyPlanResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -650,6 +655,27 @@ export function DailyPlanner({
                       </button>
                     )}
 
+                    {/* Timer Launch Button */}
+                    {onOpenTimer && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onOpenTimer({
+                            type: "HABIT",
+                            id: habit.id,
+                            title: habit.title,
+                            color: habit.color,
+                            targetMinutes: habit.type === "TIME" ? (habit.targetValue || 25) : 25,
+                            currentMinutes: currentVal,
+                          })
+                        }
+                        className="p-1.5 text-zinc-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded-lg transition-colors"
+                        title="Start Focus Timer for this habit"
+                      >
+                        <Timer className="w-4 h-4 text-emerald-500" />
+                      </button>
+                    )}
+
                     {/* Open Habit Details / Edit */}
                     <button
                       onClick={() => onOpenStats(habit)}
@@ -735,6 +761,14 @@ export function DailyPlanner({
                           {task.priority}
                         </span>
 
+                        {/* Time Spent Badge */}
+                        {task.timeSpent !== undefined && task.timeSpent !== null && task.timeSpent > 0 && (
+                          <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 px-2 py-0.5 rounded-md flex items-center gap-1 border border-blue-200/50 dark:border-blue-900/40">
+                            <Timer className="w-2.5 h-2.5" />
+                            {task.timeSpent}m
+                          </span>
+                        )}
+
                         {/* Category */}
                         {task.category && (
                           <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400">
@@ -761,6 +795,24 @@ export function DailyPlanner({
 
                   {/* Actions */}
                   <div className="flex items-center gap-1 shrink-0 ml-3">
+                    {onOpenTimer && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onOpenTimer({
+                            type: "TASK",
+                            id: task.id,
+                            title: task.title,
+                            color: task.priority === "HIGH" ? "#EF4444" : "#3B82F6",
+                            currentMinutes: task.timeSpent || 0,
+                          })
+                        }
+                        className="p-1.5 text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 rounded-lg transition-colors"
+                        title="Start Focus Timer for this task"
+                      >
+                        <Timer className="w-4 h-4 text-blue-500" />
+                      </button>
+                    )}
                     <button
                       onClick={() => onEditTask(task)}
                       className="p-1.5 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"

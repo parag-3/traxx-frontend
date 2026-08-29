@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { useRouter } from "next/navigation";
-import { Habit, Task } from "@/types/habit";
+import { Habit, Task, TimerTarget } from "@/types/habit";
 import { API_BASE_URL } from "@/lib/api";
 import { HabitCard } from "@/components/habit-card";
 import { CreateHabitModal } from "@/components/create-habit-modal";
@@ -12,6 +12,7 @@ import { HabitStatsModal } from "@/components/habit-stats-modal";
 import { DailyPlanner } from "@/components/daily-planner";
 import { ReminderBanner } from "@/components/reminder-banner";
 import { DateNavigator } from "@/components/date-navigator";
+import { TimerModal } from "@/components/timer-modal";
 import {
   Plus,
   Flame,
@@ -33,7 +34,7 @@ export default function Home() {
 
   const [habits, setHabits] = useState<Habit[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<"ALL" | "NUMERICAL" | "STATUS">("ALL");
+  const [filter, setFilter] = useState<"ALL" | "TIME" | "NUMERICAL" | "STATUS">("ALL");
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
 
   // Selected calendar date (defaults to today)
@@ -51,6 +52,8 @@ export default function Home() {
 
   const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+
+  const [timerTarget, setTimerTarget] = useState<TimerTarget | null>(null);
 
   // Fetch habits
   const fetchHabits = useCallback(async () => {
@@ -238,6 +241,7 @@ export default function Home() {
             }}
             onOpenStats={(habit) => setStatsHabit(habit)}
             onHabitsUpdated={fetchHabits}
+            onOpenTimer={(target) => setTimerTarget(target)}
           />
         ) : (
           /* VIEW 2: HABITS DASHBOARD & METRICS */
@@ -296,6 +300,16 @@ export default function Home() {
                   }`}
                 >
                   All ({habits.length})
+                </button>
+                <button
+                  onClick={() => setFilter("TIME")}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                    filter === "TIME"
+                      ? "bg-emerald-600 text-white shadow-sm"
+                      : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                  }`}
+                >
+                  ⏱️ Time
                 </button>
                 <button
                   onClick={() => setFilter("NUMERICAL")}
@@ -358,6 +372,7 @@ export default function Home() {
                       setIsCreateHabitOpen(true);
                     }}
                     onDeleteHabit={handleDeleteHabit}
+                    onOpenTimer={(target) => setTimerTarget(target)}
                   />
                 ))}
               </div>
@@ -418,6 +433,15 @@ export default function Home() {
           fetchHabits();
         }}
         onHabitUpdated={fetchHabits}
+      />
+
+      {/* Live Focus Countdown Timer & Audio Alarm Modal */}
+      <TimerModal
+        isOpen={!!timerTarget}
+        target={timerTarget}
+        selectedDate={selectedDate}
+        onClose={() => setTimerTarget(null)}
+        onSuccess={fetchHabits}
       />
     </div>
   );

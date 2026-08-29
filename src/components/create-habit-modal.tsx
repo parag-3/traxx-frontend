@@ -21,6 +21,7 @@ import {
   Calendar,
   Clock,
   Bell,
+  Timer,
 } from "lucide-react";
 
 interface CreateHabitModalProps {
@@ -326,39 +327,69 @@ export function CreateHabitModal({ isOpen, onClose, onSuccess, editHabit }: Crea
             </div>
           )}
 
-          {/* Type Selector (Numerical vs Custom Status) */}
+          {/* Type Selector (Numerical vs Time-Based vs Custom Status) */}
           {!editHabit && (
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2">
                 Habit Tracking Type
               </label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 <button
                   type="button"
-                  onClick={() => setType("NUMERICAL")}
-                  className={`p-3.5 rounded-xl border text-left transition-all ${
+                  onClick={() => {
+                    setType("NUMERICAL");
+                    setUnit("pages");
+                    setTargetValue("30");
+                  }}
+                  className={`p-3 rounded-2xl border text-left transition-all ${
                     type === "NUMERICAL"
-                      ? "border-blue-500/80 bg-blue-50/50 dark:bg-blue-950/30 text-blue-900 dark:text-blue-200 ring-2 ring-blue-500/20"
+                      ? "border-blue-500/80 bg-blue-50/50 dark:bg-blue-950/30 text-blue-900 dark:text-blue-200 ring-2 ring-blue-500/20 shadow-xs"
                       : "border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 text-zinc-700 dark:text-zinc-300"
                   }`}
                 >
-                  <div className="font-semibold text-sm">🔢 Numerical Habit</div>
-                  <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-                    Quantities, units (pages, km, mins, ml), sum & avg stats
+                  <div className="font-semibold text-xs sm:text-sm flex items-center gap-1.5">
+                    <span>🔢</span> Numerical
+                  </div>
+                  <div className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-2">
+                    Count units (pages, km, reps, glasses, ml)
                   </div>
                 </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setType("TIME");
+                    setUnit("mins");
+                    setTargetValue("25");
+                  }}
+                  className={`p-3 rounded-2xl border text-left transition-all ${
+                    type === "TIME"
+                      ? "border-emerald-500/80 bg-emerald-50/50 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-200 ring-2 ring-emerald-500/20 shadow-xs"
+                      : "border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 text-zinc-700 dark:text-zinc-300"
+                  }`}
+                >
+                  <div className="font-semibold text-xs sm:text-sm flex items-center gap-1.5">
+                    <span>⏱️</span> Time / Timer
+                  </div>
+                  <div className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-2">
+                    Live focus timer & minutes (meditation, reading, deep work)
+                  </div>
+                </button>
+
                 <button
                   type="button"
                   onClick={() => setType("STATUS")}
-                  className={`p-3.5 rounded-xl border text-left transition-all ${
+                  className={`p-3 rounded-2xl border text-left transition-all ${
                     type === "STATUS"
-                      ? "border-purple-500/80 bg-purple-50/50 dark:bg-purple-950/30 text-purple-900 dark:text-purple-200 ring-2 ring-purple-500/20"
+                      ? "border-purple-500/80 bg-purple-50/50 dark:bg-purple-950/30 text-purple-900 dark:text-purple-200 ring-2 ring-purple-500/20 shadow-xs"
                       : "border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 text-zinc-700 dark:text-zinc-300"
                   }`}
                 >
-                  <div className="font-semibold text-sm">🏷️ Custom Status / Enum</div>
-                  <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-                    Custom enum values (e.g. Done, Progress, Skipped) with custom colors
+                  <div className="font-semibold text-xs sm:text-sm flex items-center gap-1.5">
+                    <span>🏷️</span> Custom Enum
+                  </div>
+                  <div className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-2">
+                    Custom states (Done, Progress, Skipped, Good)
                   </div>
                 </button>
               </div>
@@ -724,6 +755,59 @@ export function CreateHabitModal({ isOpen, onClose, onSuccess, editHabit }: Crea
                     <option value="AVERAGE">AVERAGE (Daily average)</option>
                   </select>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Time-Based Config */}
+          {type === "TIME" && (
+            <div className="p-4 bg-zinc-50 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+                  <Timer className="w-4 h-4 text-emerald-500" /> Time Focus Goal
+                </span>
+                <span className="text-[11px] text-zinc-400">Timer & manual entry supported</span>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1.5">
+                  Daily Target Focus Time (Minutes to pass habit) *
+                </label>
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="relative">
+                    <input
+                      type="number"
+                      step="1"
+                      min="1"
+                      value={targetValue}
+                      onChange={(e) => setTargetValue(e.target.value)}
+                      placeholder="25"
+                      className="w-28 px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm font-bold text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-xs"
+                      required
+                    />
+                  </div>
+                  <span className="text-xs font-bold text-zinc-500">minutes / day</span>
+
+                  <div className="flex items-center gap-1 sm:ml-auto">
+                    {[15, 25, 30, 45, 60].map((mins) => (
+                      <button
+                        key={mins}
+                        type="button"
+                        onClick={() => setTargetValue(String(mins))}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
+                          targetValue === String(mins)
+                            ? "bg-emerald-600 text-white"
+                            : "bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100"
+                        }`}
+                      >
+                        {mins}m
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-2">
+                  You can launch the live focus timer directly from the habit card or manually add minutes worked.
+                </p>
               </div>
             </div>
           )}

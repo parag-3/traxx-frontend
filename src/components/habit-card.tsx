@@ -26,7 +26,10 @@ import {
   Clock,
   RotateCcw,
   X,
+  Timer,
+  Play,
 } from "lucide-react";
+import { TimerTarget } from "@/types/habit";
 
 interface HabitCardProps {
   habit: Habit;
@@ -35,6 +38,7 @@ interface HabitCardProps {
   onOpenStats: (habit: Habit) => void;
   onEditHabit: (habit: Habit) => void;
   onDeleteHabit: (habitId: string) => void;
+  onOpenTimer?: (target: TimerTarget) => void;
 }
 
 const ICON_MAP: Record<string, any> = {
@@ -58,6 +62,7 @@ export function HabitCard({
   onOpenStats,
   onEditHabit,
   onDeleteHabit,
+  onOpenTimer,
 }: HabitCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [logging, setLogging] = useState(false);
@@ -67,7 +72,7 @@ export function HabitCard({
   const IconComp = ICON_MAP[habit.icon] || Activity;
   const todayLog = habit.todayLog;
 
-  // Compute numerical progress
+  // Compute numerical / time progress
   const currentVal = todayLog?.numericValue ?? 0;
   const hasNumericalLog = todayLog?.numericValue !== null && todayLog?.numericValue !== undefined;
   const target = habit.targetValue ?? 1;
@@ -139,44 +144,44 @@ export function HabitCard({
       sendLog({ statusValue: habit.statusOptions[0]?.value });
       return;
     }
-    const currentIdx = habit.statusOptions.findIndex((o) => o.value === currentStatusVal);
-    if (currentIdx === habit.statusOptions.length - 1) {
-      // Reached the end -> cycle to clear / unlogged!
+    const currentIndex = habit.statusOptions.findIndex((o) => o.value === currentStatusVal);
+    const nextIndex = (currentIndex + 1) % habit.statusOptions.length;
+    sendLog({ statusValue: habit.statusOptions[nextIndex]?.value });
+  };
+
+  // Direct select status
+  const handleSelectStatus = (statusVal: string) => {
+    if (currentStatusVal === statusVal) {
       handleClearLog();
     } else {
-      const nextOpt = habit.statusOptions[currentIdx + 1];
-      if (nextOpt) {
-        sendLog({ statusValue: nextOpt.value });
-      }
+      sendLog({ statusValue: statusVal });
     }
   };
 
-  const handleSelectStatus = (optValue: string) => {
-    if (currentStatusVal === optValue) {
-      // Clicking already active status clears it!
-      handleClearLog();
-    } else {
-      sendLog({ statusValue: optValue });
-    }
-  };
+  const isRestDay = !habit.isScheduledToday;
+  const isLoggedToday = Boolean(todayLog);
 
-  // Frequency Label formatting
-  let freqLabel = "Every Day";
-  if (habit.frequencyType === "WEEKDAYS") freqLabel = "Mon–Fri";
-  if (habit.frequencyType === "WEEKENDS") freqLabel = "Sat–Sun";
-  if (habit.frequencyType === "CUSTOM_DAYS" && habit.frequencyDays) freqLabel = habit.frequencyDays;
-  if (habit.frequencyType === "TIMES_PER_WEEK") freqLabel = `${habit.frequencyTarget}x/week`;
-
-  const isRestDay = habit.isScheduledToday === false;
-  const isLoggedToday = habit.type === "NUMERICAL" ? hasNumericalLog && currentVal > 0 : hasStatusLog;
+  let freqLabel = "Daily";
+  if (habit.frequencyType === "WEEKDAYS") freqLabel = "Weekdays";
+  else if (habit.frequencyType === "WEEKENDS") freqLabel = "Weekends";
+  else if (habit.frequencyType === "CUSTOM_DAYS") {
+    freqLabel = habit.frequencyDays ? habit.frequencyDays.replace(/,/g, " ") : "Custom";
+  }
 
   return (
-    <div className="relative group bg-white dark:bg-zinc-950/80 border border-zinc-200/90 dark:border-zinc-800/80 hover:border-zinc-300 dark:hover:border-zinc-700/80 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between">
-      {/* Top row: Icon, Category, Title & Menu */}
+    <div
+      className={`group relative rounded-3xl p-5 border transition-all duration-200 bg-white dark:bg-zinc-950 flex flex-col justify-between ${
+        todayLog?.isCompleted
+          ? "border-emerald-500/40 shadow-sm shadow-emerald-500/5 ring-1 ring-emerald-500/20"
+          : isRestDay
+          ? "border-zinc-200/50 dark:border-zinc-800/40 opacity-75"
+          : "border-zinc-200/80 dark:border-zinc-800/80 hover:border-zinc-300 dark:hover:border-zinc-700 shadow-xs"
+      }`}
+    >
       <div>
-        <div className="flex items-start justify-between gap-3">
+        {/* Top bar: Category, Frequency, Rest day flag & 3-dot Menu */}
+        <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-3">
-            {/* Habit Icon with custom background */}
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-sm shrink-0 transition-transform group-hover:scale-105"
               style={{ backgroundColor: habit.color }}
@@ -224,7 +229,25 @@ export function HabitCard({
             </button>
 
             {menuOpen && (
-              <div className="absolute right-0 mt-1 w-40 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xl py-1 z-20 animate-in fade-in slide-in-from-top-1 text-xs">
+              <div className="absolute right-0 mt-1 w-44 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xl py-1 z-20 animate-in fade-in slide-in-from-top-1 text-xs">
+                {onOpenTimer && (
+                  <button
+                    onClick={() => {
+                      setMenuOpen(false);
+                      onOpenTimer({
+                        type: "HABIT",
+                        id: habit.id,
+                        title: habit.title,
+                        color: habit.color,
+                        targetMinutes: habit.type === "TIME" ? (habit.targetValue || 25) : 25,
+                        currentMinutes: currentVal,
+                      });
+                    }}
+                    className="flex items-center gap-2 w-full px-3 py-2 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  >
+                    <Timer className="w-3.5 h-3.5 text-emerald-500" /> Focus Timer
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     setMenuOpen(false);
@@ -299,9 +322,86 @@ export function HabitCard({
         </div>
       </div>
 
-      {/* Dynamic Action Section (Numerical vs Custom Enum) */}
+      {/* Dynamic Action Section (Time vs Numerical vs Custom Enum) */}
       <div className="mt-5 pt-4 border-t border-zinc-100 dark:border-zinc-800/60">
-        {habit.type === "NUMERICAL" ? (
+        {habit.type === "TIME" ? (
+          /* TIME HABIT SECTION */
+          <div className="space-y-2.5">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-medium text-zinc-500 dark:text-zinc-400">
+                Focus Time: <strong className="text-zinc-900 dark:text-white font-bold">{currentVal}</strong> / {habit.targetValue || 25} mins
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-zinc-800 dark:text-zinc-200">
+                  {progressPercent}%
+                </span>
+                {isLoggedToday && (
+                  <button
+                    onClick={handleClearLog}
+                    className="text-[10px] text-zinc-400 hover:text-red-500 dark:hover:text-red-400 flex items-center gap-0.5 hover:underline transition-colors"
+                    title="Reset back to 0 / clear entry"
+                  >
+                    <RotateCcw className="w-2.5 h-2.5" /> Clear
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="w-full h-2.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all duration-300"
+                style={{
+                  width: `${progressPercent}%`,
+                  backgroundColor: habit.color,
+                }}
+              />
+            </div>
+
+            {/* Interactive Timer Launch & Fast Increment Buttons */}
+            <div className="flex items-center justify-between gap-2 pt-1">
+              {onOpenTimer && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    onOpenTimer({
+                      type: "HABIT",
+                      id: habit.id,
+                      title: habit.title,
+                      color: habit.color,
+                      targetMinutes: habit.targetValue || 25,
+                      currentMinutes: currentVal,
+                    })
+                  }
+                  className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm shadow-emerald-500/20 transition-all hover:scale-[1.02] cursor-pointer"
+                >
+                  <Play className="w-3 h-3 fill-white" />
+                  <span>Start Focus Timer</span>
+                </button>
+              )}
+
+              {/* Fast Steppers */}
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => handleNumericStep(15)}
+                  disabled={logging}
+                  className="px-2.5 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800/80 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-xs font-bold text-zinc-700 dark:text-zinc-300 transition-colors"
+                  title="Add 15 minutes manually"
+                >
+                  +15m
+                </button>
+                <button
+                  onClick={() => handleNumericStep(30)}
+                  disabled={logging}
+                  className="px-2.5 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800/80 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-xs font-bold text-zinc-700 dark:text-zinc-300 transition-colors"
+                  title="Add 30 minutes manually"
+                >
+                  +30m
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : habit.type === "NUMERICAL" ? (
           <div className="space-y-2.5">
             {/* Progress Label & Clear Action */}
             <div className="flex items-center justify-between text-xs">

@@ -1,4 +1,4 @@
-export type HabitType = 'NUMERICAL' | 'STATUS';
+export type HabitType = 'NUMERICAL' | 'STATUS' | 'TIME';
 export type AggregationType = 'SUM' | 'AVERAGE' | 'MAX' | 'MIN';
 export type FrequencyType = 'DAILY' | 'WEEKDAYS' | 'WEEKENDS' | 'CUSTOM_DAYS' | 'TIMES_PER_WEEK';
 export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH';
@@ -106,8 +106,20 @@ export interface Task {
   category: string | null;
   time: string | null;
   reminderTime: string | null;
+  timeSpent?: number | null; // in minutes
   createdAt: string;
   updatedAt: string;
+}
+
+export interface TimerTarget {
+  type: 'HABIT' | 'TASK';
+  id: string;
+  title: string;
+  color: string;
+  icon?: string;
+  targetMinutes?: number;
+  currentMinutes?: number;
+  category?: string;
 }
 
 export interface DailyPlanItem {
