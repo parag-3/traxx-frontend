@@ -6,8 +6,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Zap,
-  CheckCircle2,
   Sparkles,
+  Check,
 } from "lucide-react";
 import { API_BASE_URL } from "@/lib/api";
 
@@ -113,6 +113,56 @@ export function DateNavigator({ selectedDate, onSelectDate, refreshTrigger }: Da
     fetchWeekStats();
   }, [fetchWeekStats, refreshTrigger]);
 
+  // Helper to determine heatmap shade styles
+  const getHeatmapStyles = (percent: number, hasItems: boolean, isSelected: boolean) => {
+    if (!hasItems || percent === 0) {
+      return {
+        card: "bg-zinc-50 dark:bg-zinc-900/60 border-zinc-200/80 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300",
+        badge: "text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800/80",
+        dayLabel: isSelected ? "text-blue-600 dark:text-blue-400 font-black" : "text-zinc-400 dark:text-zinc-500 font-bold",
+        numColor: isSelected ? "text-zinc-950 dark:text-white" : "text-zinc-700 dark:text-zinc-300",
+      };
+    }
+
+    if (percent >= 100) {
+      // 100% Complete - Deep Vibrant Emerald
+      return {
+        card: "bg-emerald-600 dark:bg-emerald-600 border-emerald-500 dark:border-emerald-500 text-white shadow-sm shadow-emerald-600/30",
+        badge: "bg-white text-emerald-700 font-black shadow-xs",
+        dayLabel: "text-emerald-100 font-black",
+        numColor: "text-white font-black",
+      };
+    }
+
+    if (percent >= 67) {
+      // Tier 3: 67% - 99% - Rich Dark Green
+      return {
+        card: "bg-emerald-500/25 dark:bg-emerald-800/60 border-emerald-400/80 dark:border-emerald-600 text-emerald-950 dark:text-emerald-100",
+        badge: "bg-emerald-500 text-white dark:bg-emerald-600 dark:text-white font-bold",
+        dayLabel: isSelected ? "text-blue-600 dark:text-blue-400 font-black" : "text-emerald-700 dark:text-emerald-300 font-bold",
+        numColor: "text-emerald-950 dark:text-emerald-100 font-extrabold",
+      };
+    }
+
+    if (percent >= 34) {
+      // Tier 2: 34% - 66% - Medium Green
+      return {
+        card: "bg-emerald-500/15 dark:bg-emerald-900/40 border-emerald-300/70 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200",
+        badge: "bg-emerald-200/80 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold",
+        dayLabel: isSelected ? "text-blue-600 dark:text-blue-400 font-black" : "text-emerald-600 dark:text-emerald-400 font-bold",
+        numColor: "text-emerald-900 dark:text-emerald-200 font-extrabold",
+      };
+    }
+
+    // Tier 1: 1% - 33% - Light Green Tint
+    return {
+      card: "bg-emerald-500/10 dark:bg-emerald-950/30 border-emerald-200/60 dark:border-emerald-900/40 text-emerald-900 dark:text-emerald-300",
+      badge: "bg-emerald-100/70 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 font-semibold",
+      dayLabel: isSelected ? "text-blue-600 dark:text-blue-400 font-black" : "text-emerald-600/80 dark:text-emerald-400/80 font-bold",
+      numColor: "text-emerald-900 dark:text-emerald-300 font-bold",
+    };
+  };
+
   return (
     <div className="bg-white dark:bg-zinc-950 border border-zinc-200/90 dark:border-zinc-800/80 rounded-3xl p-4 shadow-sm space-y-3.5">
       {/* Top row: Direct Picker, Day Shift, Jump to Today, Week Shift */}
@@ -203,96 +253,63 @@ export function DateNavigator({ selectedDate, onSelectDate, refreshTrigger }: Da
         </div>
       </div>
 
-      {/* Bottom row: Interactive 7-Day Liquid Bucket / Heatmap Strip */}
+      {/* Bottom row: Interactive 7-Day Clean Green Heatmap Strip */}
       <div className="grid grid-cols-7 gap-2 pt-1 border-t border-zinc-100 dark:border-zinc-900">
         {weekDays.map((day) => {
           const stat = weekStats[day.iso] || { totalCount: 0, completedCount: 0, percentage: 0 };
           const percent = stat.percentage;
           const hasItems = stat.totalCount > 0;
           const is100 = percent === 100 && hasItems;
+          const styles = getHeatmapStyles(percent, hasItems, day.isSelected);
 
           return (
             <button
               key={day.iso}
               type="button"
               onClick={() => onSelectDate(day.iso)}
-              className={`relative overflow-hidden min-h-[5.2rem] sm:min-h-[5.8rem] rounded-2xl flex flex-col justify-between p-2 sm:p-2.5 transition-all duration-200 text-center ${
+              className={`min-h-[5.2rem] sm:min-h-[5.6rem] rounded-2xl flex flex-col justify-between p-2 sm:p-2.5 transition-all duration-200 text-center border ${
+                styles.card
+              } ${
                 day.isSelected
                   ? "ring-2 ring-blue-600 dark:ring-blue-400 ring-offset-2 dark:ring-offset-black scale-[1.03] shadow-md z-10"
-                  : "hover:scale-[1.02] border border-zinc-200/80 dark:border-zinc-800/80 hover:border-zinc-300 dark:hover:border-zinc-700 shadow-xs"
-              } ${
-                is100
-                  ? "bg-emerald-50/80 dark:bg-emerald-950/30"
-                  : percent >= 50
-                  ? "bg-emerald-50/40 dark:bg-emerald-950/20"
-                  : "bg-zinc-50/60 dark:bg-zinc-900/40"
+                  : "hover:scale-[1.02] shadow-xs"
               }`}
               title={`${day.iso}: ${stat.completedCount}/${stat.totalCount} completed (${percent}%)`}
             >
-              {/* Liquid Bucket Fill Layer rising from bottom */}
-              {hasItems && percent > 0 && (
-                <div
-                  className={`absolute inset-x-0 bottom-0 transition-all duration-500 ease-out pointer-events-none ${
-                    is100
-                      ? "bg-gradient-to-t from-emerald-500/50 via-emerald-400/40 to-emerald-400/25 dark:from-emerald-600/40 dark:to-emerald-500/20 border-t-2 border-emerald-500/70"
-                      : percent >= 70
-                      ? "bg-gradient-to-t from-emerald-500/35 to-emerald-400/20 dark:from-emerald-600/30 dark:to-emerald-500/15 border-t-2 border-emerald-500/50"
-                      : "bg-gradient-to-t from-emerald-500/25 to-emerald-400/10 dark:from-emerald-600/20 dark:to-emerald-500/10 border-t border-emerald-500/30"
-                  }`}
-                  style={{ height: `${percent}%` }}
-                />
-              )}
-
-              {/* Top: Day Name + Today Indicator */}
-              <div className="relative z-10 flex items-center justify-between w-full">
-                <span
-                  className={`text-[10px] sm:text-[11px] uppercase font-black tracking-wider ${
-                    day.isSelected
-                      ? "text-blue-600 dark:text-blue-400"
-                      : day.isToday
-                      ? "text-blue-600 dark:text-blue-400"
-                      : "text-zinc-500 dark:text-zinc-400"
-                  }`}
-                >
+              {/* Top Row: Day Name + Today Indicator */}
+              <div className="flex items-center justify-between w-full">
+                <span className={`text-[10px] sm:text-[11px] uppercase tracking-wider ${styles.dayLabel}`}>
                   {day.dayName}
                 </span>
 
                 {day.isToday && (
                   <span
-                    className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-sm"
+                    className={`w-1.5 h-1.5 rounded-full ${is100 ? "bg-white" : "bg-blue-500"} shadow-xs`}
                     title="Today"
                   />
                 )}
               </div>
 
-              {/* Middle: Date Number */}
-              <div className="relative z-10 my-0.5">
-                <span
-                  className={`text-base sm:text-lg font-black tracking-tight ${
-                    day.isSelected
-                      ? "text-zinc-900 dark:text-white"
-                      : is100
-                      ? "text-emerald-700 dark:text-emerald-300 font-extrabold"
-                      : "text-zinc-800 dark:text-zinc-200"
-                  }`}
-                >
+              {/* Middle Row: Date Number */}
+              <div className="my-0.5">
+                <span className={`text-base sm:text-lg tracking-tight ${styles.numColor}`}>
                   {day.dayNum}
                 </span>
               </div>
 
-              {/* Bottom: Completion Heatmap Percentage / Badge */}
-              <div className="relative z-10 flex items-center justify-center w-full">
+              {/* Bottom Row: Completion Percentage Badge */}
+              <div className="flex items-center justify-center w-full">
                 {hasItems ? (
                   is100 ? (
-                    <span className="inline-flex items-center gap-0.5 text-[9px] sm:text-[10px] font-black px-1.5 py-0.5 rounded-md bg-emerald-500 text-white shadow-xs">
-                      ✓ 100%
+                    <span className={`inline-flex items-center gap-0.5 text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-md ${styles.badge}`}>
+                      <Check className="w-2.5 h-2.5 stroke-[3]" /> 100%
                     </span>
                   ) : percent > 0 ? (
-                    <span className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400">
+                    <span className={`text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-md ${styles.badge}`}>
                       {percent}%
                     </span>
                   ) : (
-                    <span className="text-[9px] sm:text-[10px] font-medium text-zinc-400 px-1">
+                    <span className="text-[9px] sm:text-[10px] font-medium text-zinc-400 dark:text-zinc-500 px-1">
                       0%
                     </span>
                   )
@@ -311,23 +328,27 @@ export function DateNavigator({ selectedDate, onSelectDate, refreshTrigger }: Da
       <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[10px] text-zinc-400 px-1">
         <span className="font-medium flex items-center gap-1">
           <Sparkles className="w-3 h-3 text-emerald-500" />
-          <span>Daily Completion Heatmap</span>
+          <span>Weekly Heatmap Activity</span>
         </span>
         <div className="flex items-center gap-2">
           <span className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded-sm bg-zinc-200 dark:bg-zinc-800" />
+            <span className="w-2.5 h-2.5 rounded-sm bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700" />
             <span>0%</span>
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded-sm bg-emerald-200/80 dark:bg-emerald-950" />
-            <span>1-49%</span>
+            <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500/10 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800" />
+            <span>1-33%</span>
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded-sm bg-emerald-400/80 dark:bg-emerald-700" />
-            <span>50-99%</span>
+            <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500/25 dark:bg-emerald-900/60 border border-emerald-400 dark:border-emerald-700" />
+            <span>34-66%</span>
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 text-white font-bold flex items-center justify-center text-[7px]">✓</span>
+            <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500/40 dark:bg-emerald-800/80 border border-emerald-500 dark:border-emerald-600" />
+            <span>67-99%</span>
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-2.5 h-2.5 rounded-sm bg-emerald-600 border border-emerald-500 text-white font-bold flex items-center justify-center text-[7px]">✓</span>
             <span className="font-semibold text-emerald-600 dark:text-emerald-400">100%</span>
           </span>
         </div>
