@@ -233,11 +233,18 @@ export function CreateHabitModal({ isOpen, onClose, onSuccess, editHabit }: Crea
 
     if (type === "NUMERICAL") {
       if (!unit.trim()) {
-        setError("Please provide a unit for numerical habits (e.g. pages, km, mins, ml)");
+        setError("Please provide a unit for numerical habits (e.g. pages, km, reps, ml)");
         return;
       }
       if (!targetValue || isNaN(parseFloat(targetValue)) || parseFloat(targetValue) <= 0) {
         setError("Please provide a positive target value");
+        return;
+      }
+    }
+
+    if (type === "TIME") {
+      if (!targetValue || isNaN(parseFloat(targetValue)) || parseFloat(targetValue) <= 0) {
+        setError("Please provide a target focus duration in minutes (e.g. 25)");
         return;
       }
     }
@@ -269,7 +276,11 @@ export function CreateHabitModal({ isOpen, onClose, onSuccess, editHabit }: Crea
         payload.unit = unit.trim();
         payload.targetValue = parseFloat(targetValue);
         payload.aggregationType = aggregationType;
-      } else {
+      } else if (type === "TIME") {
+        payload.unit = "mins";
+        payload.targetValue = parseFloat(targetValue) || 25;
+        payload.aggregationType = "SUM";
+      } else if (type === "STATUS") {
         payload.statusOptions = statusOptions;
       }
 
