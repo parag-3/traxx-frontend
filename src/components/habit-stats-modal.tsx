@@ -22,7 +22,7 @@ import {
   Sparkles,
   Clock,
 } from "lucide-react";
-import { SkeletonStatsModal } from "./skeleton";
+import { Skeleton, SkeletonStatsModal } from "./skeleton";
 import { TrendLineGraph } from "./trend-line-graph";
 
 interface HabitStatsModalProps {
@@ -505,11 +505,15 @@ export function HabitStatsModal({ habit, isOpen, onClose, onHabitUpdated }: Habi
                 <span>Sat</span>
               </div>
 
-              {/* Calendar Grid */}
+              {/* Calendar Grid with Shimmer Skeleton (Never shrinks height) */}
               {calendarLoading ? (
-                <div className="py-12 text-center text-xs text-zinc-400">Loading calendar...</div>
+                <div className="grid grid-cols-7 gap-1.5 min-h-[260px]">
+                  {Array.from({ length: 35 }).map((_, i) => (
+                    <Skeleton key={i} className="h-12 rounded-xl" />
+                  ))}
+                </div>
               ) : (
-                <div className="grid grid-cols-7 gap-1.5">
+                <div className="grid grid-cols-7 gap-1.5 min-h-[260px]">
                   {/* Empty slots before first day */}
                   {Array.from({ length: firstDayOfWeek }).map((_, i) => (
                     <div
