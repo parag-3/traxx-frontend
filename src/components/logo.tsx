@@ -22,87 +22,23 @@ export function LogoIcon({
     sm: "w-6 h-6",
     md: "w-8 h-8",
     lg: "w-10 h-10",
-    xl: "w-14 h-14",
+    xl: "w-12 h-12",
   };
 
   const dim = sizeMap[size] || sizeMap.md;
 
   return (
     <div className={`relative flex items-center justify-center shrink-0 ${dim} ${className}`}>
-      {/* Ambient glowing backdrop in dark mode */}
-      <div className="absolute inset-0 rounded-xl bg-gradient-to-tr from-emerald-500/20 via-cyan-500/20 to-indigo-500/20 blur-md opacity-70 group-hover:opacity-100 transition-opacity" />
-
-      {/* SVG Emblem */}
+      {/* Clean Nike Swoosh SVG */}
       <svg
-        viewBox="0 0 48 48"
-        fill="none"
+        viewBox="0 0 24 24"
+        fill="currentColor"
         xmlns="http://www.w3.org/2000/svg"
-        className={`relative w-full h-full drop-shadow-md ${animated ? "transition-transform group-hover:scale-105 duration-300" : ""}`}
+        className={`w-full h-full text-zinc-900 dark:text-white drop-shadow-sm ${
+          animated ? "transition-transform group-hover:scale-110 duration-200" : ""
+        }`}
       >
-        <defs>
-          {/* Main Track Gradient */}
-          <linearGradient id="traxx-grad-primary" x1="4" y1="4" x2="44" y2="44" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#10B981" />
-            <stop offset="50%" stopColor="#06B6D4" />
-            <stop offset="100%" stopColor="#6366F1" />
-          </linearGradient>
-
-          {/* Secondary Accent Gradient */}
-          <linearGradient id="traxx-grad-accent" x1="12" y1="36" x2="40" y2="12" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#34D399" />
-            <stop offset="100%" stopColor="#38BDF8" />
-          </linearGradient>
-
-          {/* Dark Glass Surface Fill */}
-          <linearGradient id="traxx-bg-glass" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#1E2330" />
-            <stop offset="100%" stopColor="#0D1017" />
-          </linearGradient>
-
-          {/* Inset Border Highlight */}
-          <linearGradient id="traxx-border" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#38BDF8" stopOpacity="0.6" />
-            <stop offset="50%" stopColor="#10B981" stopOpacity="0.2" />
-            <stop offset="100%" stopColor="#6366F1" stopOpacity="0.4" />
-          </linearGradient>
-        </defs>
-
-        {/* Squircle Badge Container */}
-        <rect
-          x="2"
-          y="2"
-          width="44"
-          height="44"
-          rx="12"
-          fill="url(#traxx-bg-glass)"
-          stroke="url(#traxx-border)"
-          strokeWidth="1.5"
-        />
-
-        {/* Dynamic Dual Progress Tracks forming 'T' and velocity chevrons */}
-        {/* Track 1: Upper Horizontal 'T' Bar & Velocity Arc */}
-        <path
-          d="M12 16C12 13.7909 13.7909 12 16 12H32C34.2091 12 36 13.7909 36 16C36 18.2091 34.2091 20 32 20H16C13.7909 20 12 18.2091 12 16Z"
-          fill="url(#traxx-grad-primary)"
-        />
-
-        {/* Track 2: Left Dynamic Vertical Track with forward curve */}
-        <path
-          d="M20 18V32C20 34.2091 21.7909 36 24 36C26.2091 36 28 34.2091 28 32V18H20Z"
-          fill="url(#traxx-grad-primary)"
-        />
-
-        {/* Track 3: Forward Momentum Arrow / Checkmark Streak */}
-        <path
-          d="M13 28L21 35L36 17"
-          stroke="url(#traxx-grad-accent)"
-          strokeWidth="3.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-
-        {/* Center Glow Node */}
-        <circle cx="21" cy="35" r="2" fill="#FFFFFF" />
+        <path d="M21.707 5.293c-2.484 2.115-5.32 4.417-8.243 6.643-2.673 2.036-5.074 3.791-7.14 5.231-1.077.752-1.996 1.347-2.736 1.771-.37.212-.685.378-.938.495-.252.118-.466.195-.632.228-.166.034-.308.026-.418-.023-.11-.049-.2-.14-.258-.266-.058-.126-.078-.282-.058-.456.02-.175.083-.374.186-.595.207-.442.548-.99 1.01-1.631 1.109-1.538 2.684-3.487 4.673-5.748C9.112 8.672 11.53 6.068 14.34 3.23c.31-.312.75-.453 1.178-.378.428.075.787.353.962.744.175.39.127.848-.128 1.196-1.503 2.05-3.084 4.092-4.72 6.096 2.812-2.148 5.674-4.225 8.528-6.194.492-.34.99-.446 1.347-.286.357.16.544.526.478.966-.066.44-.393.925-.878 1.425z" />
       </svg>
     </div>
   );
