@@ -380,17 +380,17 @@ export function AnalyticsDashboard({
                   />
 
                   {/* Individual Time Habit Cards Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-zinc-100 dark:border-white/[0.04]">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pt-2 border-t border-zinc-100 dark:border-white/[0.04]">
                     {timeHabits.map((h: any) => (
                       <div
                         key={h.id}
                         onClick={() => setSelectedHabitId(h.id)}
-                        className="p-4 rounded-2xl bg-zinc-50/80 dark:bg-[#151926] border border-zinc-200/60 dark:border-white/[0.06] hover:border-emerald-500/50 transition-all cursor-pointer space-y-3 group"
+                        className="p-4 rounded-2xl bg-zinc-50/80 dark:bg-[#151926] border border-zinc-200/60 dark:border-white/[0.06] hover:border-emerald-500/50 hover:shadow-lg hover:shadow-emerald-500/5 transition-all duration-200 cursor-pointer flex flex-col justify-between gap-3 group"
                       >
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-2.5 min-w-0">
                             <div
-                              className="w-8 h-8 rounded-xl flex items-center justify-center text-white shrink-0"
+                              className="w-8 h-8 rounded-xl flex items-center justify-center text-white shrink-0 shadow-xs"
                               style={{ backgroundColor: h.color || "#10B981" }}
                             >
                               <Clock className="w-4 h-4" />
@@ -399,28 +399,40 @@ export function AnalyticsDashboard({
                               <h4 className="text-sm font-bold text-zinc-900 dark:text-white truncate group-hover:text-emerald-500 transition-colors">
                                 {h.title}
                               </h4>
-                              <p className="text-[11px] text-zinc-400">
-                                Target: {h.targetMinutes || 0} mins • Avg: {h.dailyAverageMinutes} mins/day
+                              <p className="text-[10px] text-zinc-400">
+                                {h.category || "General"}
                               </p>
                             </div>
                           </div>
-                          <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                          <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-lg border border-emerald-200/40 dark:border-emerald-800/30 shrink-0">
                             {h.totalHours} hrs
                           </span>
                         </div>
 
-                        {/* Mini Visualizer */}
-                        <div className="h-20 w-full">
+                        {/* Quick Stats Row */}
+                        <div className="flex items-center justify-between text-[11px] text-zinc-500 dark:text-zinc-400 px-0.5">
+                          <span>Target: <strong className="text-zinc-800 dark:text-zinc-200">{h.targetMinutes || 0}m</strong></span>
+                          <span>Avg: <strong className="text-zinc-800 dark:text-zinc-200">{h.dailyAverageMinutes}m/d</strong></span>
+                          <span>Peak: <strong className="text-zinc-800 dark:text-zinc-200">{h.maxMinutes}m</strong></span>
+                        </div>
+
+                        {/* Clean Smooth Sparkline Curve */}
+                        <div className="h-16 w-full pt-1">
                           <TrendLineGraph
                             data={h.timeline || []}
                             unit="m"
                             color={h.color || "#10B981"}
                             targetValue={h.targetMinutes}
-                            height={80}
-                            showTimeframes={false}
-                            showChartTypeSelector={false}
-                            defaultChartType="BAR"
+                            height={60}
+                            isMini={true}
+                            defaultChartType="LINE"
                           />
+                        </div>
+
+                        {/* Card Footer Hint */}
+                        <div className="flex items-center justify-between text-[10px] text-zinc-400 group-hover:text-emerald-500 transition-colors pt-1 border-t border-zinc-100 dark:border-white/[0.04]">
+                          <span>14-day trend</span>
+                          <span className="font-semibold">Deep Dive &rarr;</span>
                         </div>
                       </div>
                     ))}
@@ -462,17 +474,17 @@ export function AnalyticsDashboard({
                   />
 
                   {/* Individual Number Habit Cards Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pt-2 border-t border-zinc-100 dark:border-white/[0.04]">
                     {numericalHabits.map((h: any) => (
                       <div
                         key={h.id}
                         onClick={() => setSelectedHabitId(h.id)}
-                        className="p-4 rounded-2xl bg-zinc-50/80 dark:bg-[#151926] border border-zinc-200/60 dark:border-white/[0.06] hover:border-blue-500/50 transition-all cursor-pointer space-y-3 group"
+                        className="p-4 rounded-2xl bg-zinc-50/80 dark:bg-[#151926] border border-zinc-200/60 dark:border-white/[0.06] hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-200 cursor-pointer flex flex-col justify-between gap-3 group"
                       >
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-2.5 min-w-0">
                             <div
-                              className="w-8 h-8 rounded-xl flex items-center justify-center text-white shrink-0"
+                              className="w-8 h-8 rounded-xl flex items-center justify-center text-white shrink-0 shadow-xs"
                               style={{ backgroundColor: h.color || "#3B82F6" }}
                             >
                               <Target className="w-4 h-4" />
@@ -481,28 +493,40 @@ export function AnalyticsDashboard({
                               <h4 className="text-sm font-bold text-zinc-900 dark:text-white truncate group-hover:text-blue-500 transition-colors">
                                 {h.title}
                               </h4>
-                              <p className="text-[11px] text-zinc-400">
-                                Target: {h.targetValue} {h.unit} • Total: {h.totalSum.toLocaleString()} {h.unit}
+                              <p className="text-[10px] text-zinc-400">
+                                {h.category || "General"}
                               </p>
                             </div>
                           </div>
-                          <span className="text-xs font-bold text-blue-600 dark:text-cyan-400">
-                            Peak: {h.maxValue} {h.unit}
+                          <span className="text-xs font-bold text-blue-600 dark:text-cyan-400 bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded-lg border border-blue-200/40 dark:border-blue-800/30 shrink-0">
+                            {h.totalSum.toLocaleString()} {h.unit}
                           </span>
                         </div>
 
-                        {/* Mini Visualizer */}
-                        <div className="h-28 w-full">
+                        {/* Quick Stats Row */}
+                        <div className="flex items-center justify-between text-[11px] text-zinc-500 dark:text-zinc-400 px-0.5">
+                          <span>Target: <strong className="text-zinc-800 dark:text-zinc-200">{h.targetValue} {h.unit}</strong></span>
+                          <span>Avg: <strong className="text-zinc-800 dark:text-zinc-200">{h.dailyAverage}</strong></span>
+                          <span>Peak: <strong className="text-zinc-800 dark:text-zinc-200">{h.maxValue}</strong></span>
+                        </div>
+
+                        {/* Clean Smooth Sparkline Curve */}
+                        <div className="h-16 w-full pt-1">
                           <TrendLineGraph
                             data={h.timeline || []}
                             unit={h.unit}
                             color={h.color || "#3B82F6"}
                             targetValue={h.targetValue}
-                            height={110}
-                            showTimeframes={false}
-                            showChartTypeSelector={false}
-                            defaultChartType="BAR"
+                            height={60}
+                            isMini={true}
+                            defaultChartType="LINE"
                           />
+                        </div>
+
+                        {/* Card Footer Hint */}
+                        <div className="flex items-center justify-between text-[10px] text-zinc-400 group-hover:text-blue-500 transition-colors pt-1 border-t border-zinc-100 dark:border-white/[0.04]">
+                          <span>14-day trend</span>
+                          <span className="font-semibold">Deep Dive &rarr;</span>
                         </div>
                       </div>
                     ))}

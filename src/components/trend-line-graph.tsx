@@ -34,6 +34,7 @@ interface TrendLineGraphProps {
   showTimeframes?: boolean;
   showChartTypeSelector?: boolean;
   defaultChartType?: ChartType;
+  isMini?: boolean;
   emptyMessage?: string;
 }
 
@@ -48,7 +49,8 @@ export function TrendLineGraph({
   showTimeframes = true,
   showChartTypeSelector = true,
   defaultChartType = "LINE",
-  emptyMessage = "No logs recorded in this timeframe yet",
+  isMini = false,
+  emptyMessage = "No logs recorded yet",
 }: TrendLineGraphProps) {
   const [timeframe, setTimeframe] = useState<"7D" | "14D" | "30D" | "90D" | "ALL">("14D");
   const [chartType, setChartType] = useState<ChartType>(defaultChartType);
@@ -61,12 +63,20 @@ export function TrendLineGraph({
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Filter data by timeframe
+  // Filter data by timeframe (or last 14 days in mini mode)
   const filteredData = useMemo(() => {
     if (!data || data.length === 0) return [];
-    if (timeframe === "ALL") return data;
+    if (!isMini && timeframe === "ALL") return data;
 
-    const daysCount = timeframe === "7D" ? 7 : timeframe === "14D" ? 14 : timeframe === "30D" ? 30 : 90;
+    const daysCount = isMini
+      ? 14
+      : timeframe === "7D"
+      ? 7
+      : timeframe === "14D"
+      ? 14
+      : timeframe === "30D"
+      ? 30
+      : 90;
 
     // Generate continuous days leading up to today
     const result: TimelineDataPoint[] = [];
@@ -91,7 +101,7 @@ export function TrendLineGraph({
     }
 
     return result;
-  }, [data, timeframe, targetValue]);
+  }, [data, timeframe, targetValue, isMini]);
 
   // Compute metrics
   const { maxValue, avgValue, totalSum, completedDaysCount } = useMemo(() => {
@@ -115,20 +125,20 @@ export function TrendLineGraph({
 
   // SVG Dimensions & Padding
   const width = 800; // virtual canvas width
-  const padLeft = 45;
-  const padRight = 25;
-  const padTop = 30;
-  const padBottom = 35;
+  const padLeft = isMini ? 6 : 45;
+  const padRight = isMini ? 6 : 25;
+  const padTop = isMini ? 6 : 30;
+  const padBottom = isMini ? 6 : 35;
   const chartW = width - padLeft - padRight;
   const chartH = height - padTop - padBottom;
 
   // Scale functions
   const getY = useCallback(
     (val: number) => {
-      const max = maxValue > 0 ? maxValue * 1.15 : 10;
+      const max = maxValue > 0 ? maxValue * (isMini ? 1.05 : 1.15) : 10;
       return padTop + chartH - (val / max) * chartH;
     },
-    [maxValue, chartH, padTop]
+    [maxValue, chartH, padTop, isMini]
   );
 
   const getX = useCallback(
@@ -207,8 +217,8 @@ export function TrendLineGraph({
   const barWidth = useMemo(() => {
     if (points.length <= 1) return 30;
     const gap = chartW / (points.length - 1);
-    return Math.max(Math.min(gap * 0.65, 36), 6);
-  }, [points.length, chartW]);
+    return Math.max(Math.min(gap * 0.65, 36), isMini ? 12 : 6);
+  }, [points.length, chartW, isMini]);
 
   // Target Baseline Y Coordinate
   const targetY = targetValue > 0 ? getY(targetValue) : null;
@@ -254,100 +264,102 @@ export function TrendLineGraph({
   const gradientId = useMemo(() => `trend-grad-${Math.random().toString(36).substr(2, 9)}`, []);
 
   return (
-    <div ref={containerRef} className="space-y-4">
-      {/* Top Header Controls: Title, Chart Type Selector & Timeframe */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 flex-wrap">
-        <div>
-          {title && <h4 className="text-sm font-bold text-zinc-900 dark:text-white">{title}</h4>}
-          {subtitle && <p className="text-xs text-zinc-500 dark:text-zinc-400">{subtitle}</p>}
-        </div>
-
-        <div className="flex items-center gap-2.5 flex-wrap">
-          {/* Quick Metrics */}
-          <div className="flex items-center gap-2.5 text-xs text-zinc-500 dark:text-zinc-400 mr-1">
-            <span>
-              Avg: <strong className="text-zinc-900 dark:text-white font-bold">{avgValue} {unit}</strong>
-            </span>
-            <span>
-              Peak: <strong className="text-zinc-900 dark:text-white font-bold">{maxValue} {unit}</strong>
-            </span>
+    <div ref={containerRef} className={isMini ? "w-full" : "space-y-4"}>
+      {/* Top Header Controls: Title, Chart Type Selector & Timeframe (Hidden in mini mode) */}
+      {!isMini && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 flex-wrap">
+          <div>
+            {title && <h4 className="text-sm font-bold text-zinc-900 dark:text-white">{title}</h4>}
+            {subtitle && <p className="text-xs text-zinc-500 dark:text-zinc-400">{subtitle}</p>}
           </div>
 
-          {/* Chart Type Selector Toggle */}
-          {showChartTypeSelector && (
-            <div className="flex items-center gap-1 bg-zinc-100 dark:bg-white/[0.04] p-0.5 rounded-xl border border-zinc-200/60 dark:border-white/[0.06]">
-              <button
-                type="button"
-                onClick={() => setChartType("LINE")}
-                title="Spline Line Chart"
-                className={`p-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  chartType === "LINE"
-                    ? "bg-white dark:bg-[#1c2234] text-emerald-500 shadow-xs"
-                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
-                }`}
-              >
-                <TrendingUp className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setChartType("BAR")}
-                title="Column Bar Chart"
-                className={`p-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  chartType === "BAR"
-                    ? "bg-white dark:bg-[#1c2234] text-blue-500 shadow-xs"
-                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
-                }`}
-              >
-                <BarChart2 className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setChartType("STEP")}
-                title="Staircase Step Chart"
-                className={`p-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  chartType === "STEP"
-                    ? "bg-white dark:bg-[#1c2234] text-purple-500 shadow-xs"
-                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
-                }`}
-              >
-                <GitCommit className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setChartType("SCATTER")}
-                title="Scatter Point Bubble Chart"
-                className={`p-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  chartType === "SCATTER"
-                    ? "bg-white dark:bg-[#1c2234] text-amber-500 shadow-xs"
-                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
-                }`}
-              >
-                <CircleDot className="w-3.5 h-3.5" />
-              </button>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            {/* Quick Metrics */}
+            <div className="flex items-center gap-2.5 text-xs text-zinc-500 dark:text-zinc-400 mr-1">
+              <span>
+                Avg: <strong className="text-zinc-900 dark:text-white font-bold">{avgValue} {unit}</strong>
+              </span>
+              <span>
+                Peak: <strong className="text-zinc-900 dark:text-white font-bold">{maxValue} {unit}</strong>
+              </span>
             </div>
-          )}
 
-          {/* Timeframe Filter Buttons */}
-          {showTimeframes && (
-            <div className="flex items-center gap-0.5 bg-zinc-100 dark:bg-white/[0.04] p-0.5 rounded-xl border border-zinc-200/60 dark:border-white/[0.06]">
-              {(["7D", "14D", "30D", "90D", "ALL"] as const).map((tf) => (
+            {/* Chart Type Selector Toggle */}
+            {showChartTypeSelector && (
+              <div className="flex items-center gap-1 bg-zinc-100 dark:bg-white/[0.04] p-0.5 rounded-xl border border-zinc-200/60 dark:border-white/[0.06]">
                 <button
-                  key={tf}
                   type="button"
-                  onClick={() => setTimeframe(tf)}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
-                    timeframe === tf
-                      ? "bg-white dark:bg-[#1c2234] text-zinc-900 dark:text-white shadow-xs"
+                  onClick={() => setChartType("LINE")}
+                  title="Spline Line Chart"
+                  className={`p-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                    chartType === "LINE"
+                      ? "bg-white dark:bg-[#1c2234] text-emerald-500 shadow-xs"
                       : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
                   }`}
                 >
-                  {tf}
+                  <TrendingUp className="w-3.5 h-3.5" />
                 </button>
-              ))}
-            </div>
-          )}
+                <button
+                  type="button"
+                  onClick={() => setChartType("BAR")}
+                  title="Column Bar Chart"
+                  className={`p-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                    chartType === "BAR"
+                      ? "bg-white dark:bg-[#1c2234] text-blue-500 shadow-xs"
+                      : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                  }`}
+                >
+                  <BarChart2 className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setChartType("STEP")}
+                  title="Staircase Step Chart"
+                  className={`p-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                    chartType === "STEP"
+                      ? "bg-white dark:bg-[#1c2234] text-purple-500 shadow-xs"
+                      : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                  }`}
+                >
+                  <GitCommit className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setChartType("SCATTER")}
+                  title="Scatter Point Bubble Chart"
+                  className={`p-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                    chartType === "SCATTER"
+                      ? "bg-white dark:bg-[#1c2234] text-amber-500 shadow-xs"
+                      : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                  }`}
+                >
+                  <CircleDot className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+
+            {/* Timeframe Filter Buttons */}
+            {showTimeframes && (
+              <div className="flex items-center gap-0.5 bg-zinc-100 dark:bg-white/[0.04] p-0.5 rounded-xl border border-zinc-200/60 dark:border-white/[0.06]">
+                {(["7D", "14D", "30D", "90D", "ALL"] as const).map((tf) => (
+                  <button
+                    key={tf}
+                    type="button"
+                    onClick={() => setTimeframe(tf)}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                      timeframe === tf
+                        ? "bg-white dark:bg-[#1c2234] text-zinc-900 dark:text-white shadow-xs"
+                        : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                    }`}
+                  >
+                    {tf}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* SVG Canvas Area */}
       <div className="relative w-full overflow-hidden select-none">
@@ -367,8 +379,8 @@ export function TrendLineGraph({
           >
             <defs>
               <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={color} stopOpacity="0.35" />
-                <stop offset="70%" stopColor={color} stopOpacity="0.05" />
+                <stop offset="0%" stopColor={color} stopOpacity={isMini ? "0.45" : "0.35"} />
+                <stop offset="70%" stopColor={color} stopOpacity="0.08" />
                 <stop offset="100%" stopColor={color} stopOpacity="0.0" />
               </linearGradient>
 
@@ -383,33 +395,34 @@ export function TrendLineGraph({
               </linearGradient>
             </defs>
 
-            {/* Horizontal Grid Lines */}
-            {[0, 0.25, 0.5, 0.75, 1].map((pct, i) => {
-              const y = padTop + chartH * (1 - pct);
-              const val = Math.round(maxValue * pct);
-              return (
-                <g key={i}>
-                  <line
-                    x1={padLeft}
-                    y1={y}
-                    x2={width - padRight}
-                    y2={y}
-                    stroke="currentColor"
-                    className="text-zinc-200/80 dark:text-white/[0.04]"
-                    strokeDasharray={i === 0 ? "" : "3,3"}
-                    strokeWidth="1"
-                  />
-                  <text
-                    x={padLeft - 8}
-                    y={y + 3}
-                    textAnchor="end"
-                    className="text-[10px] fill-zinc-400 font-medium"
-                  >
-                    {val}
-                  </text>
-                </g>
-              );
-            })}
+            {/* Horizontal Grid Lines (Only in full mode) */}
+            {!isMini &&
+              [0, 0.25, 0.5, 0.75, 1].map((pct, i) => {
+                const y = padTop + chartH * (1 - pct);
+                const val = Math.round(maxValue * pct);
+                return (
+                  <g key={i}>
+                    <line
+                      x1={padLeft}
+                      y1={y}
+                      x2={width - padRight}
+                      y2={y}
+                      stroke="currentColor"
+                      className="text-zinc-200/80 dark:text-white/[0.04]"
+                      strokeDasharray={i === 0 ? "" : "3,3"}
+                      strokeWidth="1"
+                    />
+                    <text
+                      x={padLeft - 8}
+                      y={y + 3}
+                      textAnchor="end"
+                      className="text-[10px] fill-zinc-400 font-medium"
+                    >
+                      {val}
+                    </text>
+                  </g>
+                );
+              })}
 
             {/* Target Baseline Line */}
             {targetY !== null && targetY >= padTop && targetY <= padTop + chartH && (
@@ -421,18 +434,20 @@ export function TrendLineGraph({
                   y2={targetY}
                   stroke="#F59E0B"
                   strokeDasharray="4,4"
-                  strokeWidth="1.5"
-                  opacity="0.85"
+                  strokeWidth={isMini ? "1" : "1.5"}
+                  opacity={isMini ? "0.6" : "0.85"}
                 />
-                <text
-                  x={width - padRight}
-                  y={targetY - 6}
-                  textAnchor="end"
-                  fill="#F59E0B"
-                  className="text-[10px] font-bold"
-                >
-                  Target ({targetValue} {unit})
-                </text>
+                {!isMini && (
+                  <text
+                    x={width - padRight}
+                    y={targetY - 6}
+                    textAnchor="end"
+                    fill="#F59E0B"
+                    className="text-[10px] font-bold"
+                  >
+                    Target ({targetValue} {unit})
+                  </text>
+                )}
               </g>
             )}
 
@@ -442,7 +457,7 @@ export function TrendLineGraph({
                 {points.map((p, i) => {
                   const isHovered = hoveredPoint?.index === i;
                   const isPassed = p.data.isCompleted || (targetValue > 0 && p.data.value >= targetValue);
-                  const barH = Math.max(padTop + chartH - p.y, p.data.value > 0 ? 4 : 1);
+                  const barH = Math.max(padTop + chartH - p.y, p.data.value > 0 ? 5 : 2);
                   const barX = p.x - barWidth / 2;
                   const barY = padTop + chartH - barH;
 
@@ -476,7 +491,7 @@ export function TrendLineGraph({
                     d={stepLinePath}
                     fill="none"
                     stroke={color}
-                    strokeWidth="2.5"
+                    strokeWidth={isMini ? "2" : "2.5"}
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
@@ -493,7 +508,7 @@ export function TrendLineGraph({
                     d={linePath}
                     fill="none"
                     stroke={color}
-                    strokeWidth="2.5"
+                    strokeWidth={isMini ? "2" : "2.5"}
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
@@ -507,17 +522,15 @@ export function TrendLineGraph({
                 {points.map((p, i) => {
                   const isHovered = hoveredPoint?.index === i;
                   const isPassed = p.data.isCompleted || (targetValue > 0 && p.data.value >= targetValue);
-                  // Dynamic bubble radius based on value magnitude
-                  const radius = p.data.value > 0 ? Math.min(Math.max((p.data.value / (maxValue || 1)) * 14, 4), 18) : 2;
+                  const radius = p.data.value > 0 ? Math.min(Math.max((p.data.value / (maxValue || 1)) * (isMini ? 8 : 14), 3), isMini ? 10 : 18) : 2;
 
                   return (
                     <g key={i}>
-                      {/* Luminous Glow Halo */}
                       {p.data.value > 0 && (
                         <circle
                           cx={p.x}
                           cy={p.y}
-                          r={radius * 1.5}
+                          r={radius * 1.4}
                           fill={isPassed ? "#10B981" : color}
                           opacity="0.15"
                         />
@@ -525,10 +538,10 @@ export function TrendLineGraph({
                       <circle
                         cx={p.x}
                         cy={p.y}
-                        r={isHovered ? radius + 3 : radius}
+                        r={isHovered ? radius + 2 : radius}
                         fill={isPassed ? "#10B981" : color}
                         stroke={isHovered ? "#FFFFFF" : `${color}40`}
-                        strokeWidth="2"
+                        strokeWidth="1.5"
                         className="transition-all duration-150"
                       />
                     </g>
@@ -548,10 +561,10 @@ export function TrendLineGraph({
                       key={i}
                       cx={p.x}
                       cy={p.y}
-                      r={isSelected ? 6 : p.data.value > 0 ? 3 : 1.5}
+                      r={isSelected ? (isMini ? 4 : 6) : p.data.value > 0 ? (isMini ? 2.5 : 3) : 1.5}
                       fill={isSelected ? "#FFFFFF" : isPassed ? "#10B981" : color}
                       stroke={isSelected ? color : "transparent"}
-                      strokeWidth="2.5"
+                      strokeWidth={isMini ? "1.5" : "2.5"}
                       className="transition-all duration-150"
                     />
                   );
@@ -573,22 +586,23 @@ export function TrendLineGraph({
               />
             )}
 
-            {/* X-Axis Date Labels */}
-            {points.map((p, i) => {
-              const step = points.length > 20 ? 5 : points.length > 10 ? 2 : 1;
-              if (i % step !== 0 && i !== points.length - 1) return null;
-              return (
-                <text
-                  key={i}
-                  x={p.x}
-                  y={padTop + chartH + 18}
-                  textAnchor="middle"
-                  className="text-[10px] fill-zinc-400 font-medium"
-                >
-                  {formatShortDate(p.data.date)}
-                </text>
-              );
-            })}
+            {/* X-Axis Date Labels (Only in full mode) */}
+            {!isMini &&
+              points.map((p, i) => {
+                const step = points.length > 20 ? 5 : points.length > 10 ? 2 : 1;
+                if (i % step !== 0 && i !== points.length - 1) return null;
+                return (
+                  <text
+                    key={i}
+                    x={p.x}
+                    y={padTop + chartH + 18}
+                    textAnchor="middle"
+                    className="text-[10px] fill-zinc-400 font-medium"
+                  >
+                    {formatShortDate(p.data.date)}
+                  </text>
+                );
+              })}
           </svg>
         )}
 
@@ -602,19 +616,19 @@ export function TrendLineGraph({
               transform: "translate(-50%, -125%)",
             }}
           >
-            <div className="rounded-xl bg-[#0f121a]/95 backdrop-blur-xl border border-zinc-700/80 px-3 py-2 text-white shadow-2xl space-y-0.5 text-center min-w-[110px]">
-              <div className="text-[10px] text-zinc-400 font-semibold">{hoveredPoint.point.date}</div>
-              <div className="text-sm font-black text-white flex items-center justify-center gap-1">
+            <div className="rounded-xl bg-[#0f121a]/95 backdrop-blur-xl border border-zinc-700/80 px-2.5 py-1.5 text-white shadow-2xl space-y-0.5 text-center min-w-[95px]">
+              <div className="text-[9px] text-zinc-400 font-semibold">{hoveredPoint.point.date}</div>
+              <div className="text-xs font-black text-white flex items-center justify-center gap-1">
                 <span>{hoveredPoint.point.value}</span>
-                <span className="text-[11px] font-normal text-zinc-400">{unit}</span>
+                <span className="text-[10px] font-normal text-zinc-400">{unit}</span>
               </div>
               {targetValue > 0 && (
-                <div className="text-[10px] font-bold">
+                <div className="text-[9px] font-bold">
                   {hoveredPoint.point.value >= targetValue ? (
-                    <span className="text-emerald-400">✓ Target Reached</span>
+                    <span className="text-emerald-400">✓ Target Met</span>
                   ) : (
                     <span className="text-amber-400">
-                      {targetValue - hoveredPoint.point.value} {unit} to target
+                      {targetValue - hoveredPoint.point.value} {unit} left
                     </span>
                   )}
                 </div>
