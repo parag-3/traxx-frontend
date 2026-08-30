@@ -407,7 +407,7 @@ export function HabitStatsModal({ habit, isOpen, onClose, onHabitUpdated }: Habi
                     height={210}
                     showTimeframes={true}
                     showChartTypeSelector={true}
-                    defaultChartType="BAR"
+                    defaultChartType="LINE"
                   />
                 </div>
               </div>

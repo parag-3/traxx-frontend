@@ -376,7 +376,7 @@ export function AnalyticsDashboard({
                     height={240}
                     showTimeframes={true}
                     showChartTypeSelector={true}
-                    defaultChartType="BAR"
+                    defaultChartType="LINE"
                   />
 
                   {/* Individual Time Habit Cards Grid */}
@@ -470,7 +470,7 @@ export function AnalyticsDashboard({
                     height={240}
                     showTimeframes={true}
                     showChartTypeSelector={true}
-                    defaultChartType="BAR"
+                    defaultChartType="LINE"
                   />
 
                   {/* Individual Number Habit Cards Grid */}
