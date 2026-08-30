@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "traxx",
-  description: "traxx app",
+  title: "traxx — Focus, Habits & Daily Planning",
+  description: "High-performance daily to-do planner, focus countdown timer & habit tracking system.",
 };
 
 export default function RootLayout({

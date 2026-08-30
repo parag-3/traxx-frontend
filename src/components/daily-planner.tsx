@@ -427,10 +427,10 @@ export function DailyPlanner({
       {/* Filter Tabs & Search Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         {/* Filter Pills */}
-        <div className="flex flex-wrap items-center gap-1.5 p-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl">
+        <div className="flex flex-wrap items-center gap-1.5 p-1 bg-white dark:bg-[#11141d]/90 border border-zinc-200 dark:border-white/[0.08] rounded-2xl shadow-xs">
           <button
             onClick={() => setFilter("ALL")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors ${
               filter === "ALL"
                 ? "bg-zinc-900 dark:bg-white text-white dark:text-black shadow-xs"
                 : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
@@ -440,7 +440,7 @@ export function DailyPlanner({
           </button>
           <button
             onClick={() => setFilter("HABITS")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors ${
               filter === "HABITS"
                 ? "bg-blue-600 text-white shadow-xs"
                 : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
@@ -450,7 +450,7 @@ export function DailyPlanner({
           </button>
           <button
             onClick={() => setFilter("TASKS")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors ${
               filter === "TASKS"
                 ? "bg-purple-600 text-white shadow-xs"
                 : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
@@ -460,7 +460,7 @@ export function DailyPlanner({
           </button>
           <button
             onClick={() => setFilter("PENDING")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors ${
               filter === "PENDING"
                 ? "bg-amber-600 text-white shadow-xs"
                 : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
@@ -470,7 +470,7 @@ export function DailyPlanner({
           </button>
           <button
             onClick={() => setFilter("COMPLETED")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors ${
               filter === "COMPLETED"
                 ? "bg-emerald-600 text-white shadow-xs"
                 : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
@@ -488,12 +488,12 @@ export function DailyPlanner({
             placeholder="Search items..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full pl-9 pr-3 py-2 bg-white dark:bg-[#12151f] border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-xs"
           />
         </div>
       </div>
 
-      {/* Task & Habit List */}
+      {/* Unified To-Do Items List */}
       {loading && allItems.length === 0 ? (
         <div className="py-20 text-center text-xs text-zinc-400">Loading daily plan...</div>
       ) : filteredItems.length > 0 ? (
@@ -501,7 +501,7 @@ export function DailyPlanner({
           {filteredItems.map((item) => {
             if (item.itemType === "HABIT" && item.habitData) {
               const habit = item.habitData;
-              const IconComp = ICON_MAP[habit.icon] || Activity;
+              const IconComp = ICON_MAP[habit.icon] || Sparkles;
               const isNumerical = habit.type === "NUMERICAL";
               const currentVal = habit.todayLog?.numericValue ?? 0;
               const currentStatusVal = habit.todayLog?.statusValue;
@@ -519,10 +519,10 @@ export function DailyPlanner({
               return (
                 <div
                   key={item.id}
-                  className={`group flex items-center justify-between p-4 rounded-2xl border transition-all duration-150 ${
+                  className={`group flex items-center justify-between p-4 rounded-3xl border transition-all duration-200 ${
                     item.isCompleted
-                      ? "bg-emerald-50/40 dark:bg-emerald-950/10 border-emerald-200/60 dark:border-emerald-900/30"
-                      : "bg-white dark:bg-zinc-950 border-zinc-200/90 dark:border-zinc-800/80 hover:border-zinc-300 dark:hover:border-zinc-700"
+                      ? "bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-200/60 dark:border-emerald-800/40"
+                      : "bg-white dark:bg-[#11141d]/90 backdrop-blur-md border-zinc-200/90 dark:border-white/[0.08] hover:border-zinc-300 dark:hover:border-white/[0.18] shadow-xs dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.5)]"
                   }`}
                 >
                   <div className="flex items-center gap-3.5 min-w-0 flex-1">
@@ -694,10 +694,10 @@ export function DailyPlanner({
               return (
                 <div
                   key={item.id}
-                  className={`group flex items-center justify-between p-4 rounded-2xl border transition-all duration-150 ${
+                  className={`group flex items-center justify-between p-4 rounded-3xl border transition-all duration-200 ${
                     item.isCompleted
-                      ? "bg-zinc-50/60 dark:bg-zinc-950/40 border-zinc-200/50 dark:border-zinc-800/40 opacity-75"
-                      : "bg-white dark:bg-zinc-950 border-zinc-200/90 dark:border-zinc-800/80 hover:border-zinc-300 dark:hover:border-zinc-700"
+                      ? "bg-zinc-50/60 dark:bg-[#11141d]/50 border-zinc-200/50 dark:border-white/[0.05] opacity-75"
+                      : "bg-white dark:bg-[#11141d]/90 backdrop-blur-md border-zinc-200/90 dark:border-white/[0.08] hover:border-zinc-300 dark:hover:border-white/[0.18] shadow-xs dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.5)]"
                   }`}
                 >
                   <div className="flex items-center gap-3.5 min-w-0 flex-1">

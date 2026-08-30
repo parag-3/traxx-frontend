@@ -5,6 +5,7 @@ import { useAuth } from "./auth-provider";
 import { Sun, Moon, Monitor, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
+import { Logo } from "./logo";
 
 export function Navbar() {
   const { theme, setTheme, resolvedTheme } = useTheme();
@@ -34,9 +35,9 @@ export function Navbar() {
 
   const themeIcon = () => {
     if (!mounted) return <div className="w-5 h-5" />;
-    if (theme === "system") return <Monitor className="w-5 h-5" />;
-    if (resolvedTheme === "dark") return <Moon className="w-5 h-5" />;
-    return <Sun className="w-5 h-5" />;
+    if (theme === "system") return <Monitor className="w-4 h-4 text-emerald-500" />;
+    if (resolvedTheme === "dark") return <Moon className="w-4 h-4 text-cyan-400" />;
+    return <Sun className="w-4 h-4 text-amber-500" />;
   };
 
   const handleLogout = async () => {
@@ -46,47 +47,44 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-zinc-200 dark:border-zinc-800/50 bg-white/80 dark:bg-black/90 backdrop-blur-md">
-      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4 sm:px-6">
+    <header className="sticky top-0 z-50 w-full border-b border-zinc-200/80 dark:border-white/[0.08] bg-white/80 dark:bg-[#090b10]/85 backdrop-blur-xl transition-colors">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
         {/* Logo */}
-        <button
-          onClick={() => router.push("/")}
-          className="text-xl font-bold tracking-tight text-black dark:text-white hover:opacity-80 transition-opacity"
-        >
-          traxx
-        </button>
+        <div onClick={() => router.push("/")} className="cursor-pointer">
+          <Logo size="md" showText={true} />
+        </div>
 
         {/* Right side controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           {/* Theme toggle */}
           <div className="relative" ref={themeMenuRef}>
             <button
               onClick={() => setThemeMenuOpen(!themeMenuOpen)}
-              className="flex items-center justify-center w-9 h-9 rounded-lg text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/70 transition-colors"
+              className="flex items-center justify-center w-9 h-9 rounded-xl border border-zinc-200/80 dark:border-white/[0.08] bg-zinc-50 dark:bg-[#12151f] text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-[#181d2a] hover:border-zinc-300 dark:hover:border-white/[0.15] transition-all shadow-xs"
               aria-label="Toggle theme"
             >
               {themeIcon()}
             </button>
 
             {themeMenuOpen && (
-              <div className="absolute right-0 mt-2 w-36 rounded-lg border border-zinc-200 dark:border-zinc-800/60 bg-white dark:bg-zinc-950 shadow-lg dark:shadow-black/40 py-1 animate-in fade-in slide-in-from-top-1">
+              <div className="absolute right-0 mt-2 w-36 rounded-2xl border border-zinc-200 dark:border-white/[0.1] bg-white dark:bg-[#12151f] shadow-xl dark:shadow-black/60 p-1.5 z-50 animate-in fade-in slide-in-from-top-1 text-xs">
                 <button
                   onClick={() => { setTheme("light"); setThemeMenuOpen(false); }}
-                  className={`flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors ${theme === "light" ? "text-blue-500 dark:text-blue-400" : "text-zinc-700 dark:text-zinc-200"}`}
+                  className={`flex items-center gap-2 w-full px-3 py-2 rounded-xl text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-[#181d2a] transition-colors ${theme === "light" ? "text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-950/30" : "text-zinc-700 dark:text-zinc-300"}`}
                 >
-                  <Sun className="w-4 h-4" /> Light
+                  <Sun className="w-3.5 h-3.5 text-amber-500" /> Light
                 </button>
                 <button
                   onClick={() => { setTheme("dark"); setThemeMenuOpen(false); }}
-                  className={`flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors ${theme === "dark" ? "text-blue-500 dark:text-blue-400" : "text-zinc-700 dark:text-zinc-200"}`}
+                  className={`flex items-center gap-2 w-full px-3 py-2 rounded-xl text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-[#181d2a] transition-colors ${theme === "dark" ? "text-cyan-400 bg-cyan-950/30" : "text-zinc-700 dark:text-zinc-300"}`}
                 >
-                  <Moon className="w-4 h-4" /> Dark
+                  <Moon className="w-3.5 h-3.5 text-cyan-400" /> Dark
                 </button>
                 <button
                   onClick={() => { setTheme("system"); setThemeMenuOpen(false); }}
-                  className={`flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors ${theme === "system" ? "text-blue-500 dark:text-blue-400" : "text-zinc-700 dark:text-zinc-200"}`}
+                  className={`flex items-center gap-2 w-full px-3 py-2 rounded-xl text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-[#181d2a] transition-colors ${theme === "system" ? "text-emerald-400 bg-emerald-950/30" : "text-zinc-700 dark:text-zinc-300"}`}
                 >
-                  <Monitor className="w-4 h-4" /> System
+                  <Monitor className="w-3.5 h-3.5 text-emerald-500" /> System
                 </button>
               </div>
             )}
@@ -98,7 +96,7 @@ export function Navbar() {
               <div className="relative" ref={profileMenuRef}>
                 <button
                   onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-                  className="flex items-center justify-center w-9 h-9 rounded-full overflow-hidden border-2 border-zinc-200 dark:border-zinc-600 hover:border-zinc-400 dark:hover:border-zinc-400 transition-colors"
+                  className="flex items-center justify-center w-9 h-9 rounded-full overflow-hidden border-2 border-zinc-200 dark:border-white/[0.15] hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors shadow-xs"
                 >
                   {user.picture ? (
                     // eslint-disable-next-line @next/next/no-img-element

@@ -170,12 +170,12 @@ export function HabitCard({
 
   return (
     <div
-      className={`group relative rounded-3xl p-5 border transition-all duration-200 bg-white dark:bg-zinc-950 flex flex-col justify-between ${
+      className={`group relative rounded-3xl p-5 border transition-all duration-200 bg-white dark:bg-[#11141d]/90 backdrop-blur-md flex flex-col justify-between ${
         todayLog?.isCompleted
-          ? "border-emerald-500/40 shadow-sm shadow-emerald-500/5 ring-1 ring-emerald-500/20"
+          ? "border-emerald-500/40 dark:border-emerald-500/50 shadow-sm shadow-emerald-500/10 ring-1 ring-emerald-500/20"
           : isRestDay
-          ? "border-zinc-200/50 dark:border-zinc-800/40 opacity-75"
-          : "border-zinc-200/80 dark:border-zinc-800/80 hover:border-zinc-300 dark:hover:border-zinc-700 shadow-xs"
+          ? "border-zinc-200/50 dark:border-white/[0.05] opacity-75"
+          : "border-zinc-200/80 dark:border-white/[0.08] hover:border-zinc-300 dark:hover:border-white/[0.18] shadow-xs dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.5)]"
       }`}
     >
       <div>
@@ -191,11 +191,11 @@ export function HabitCard({
 
             <div>
               <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-[11px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
+                <span className="text-[11px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-[#181d2c] text-zinc-600 dark:text-zinc-300">
                   {habit.category || "General"}
                 </span>
                 {/* Frequency Badge */}
-                <span className="text-[10px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1 bg-zinc-50 dark:bg-zinc-900 px-1.5 py-0.5 rounded-md border border-zinc-200/60 dark:border-zinc-800">
+                <span className="text-[10px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1 bg-zinc-50 dark:bg-[#151926] px-1.5 py-0.5 rounded-md border border-zinc-200/60 dark:border-white/[0.06]">
                   <Calendar className="w-2.5 h-2.5 text-blue-500" />
                   {freqLabel}
                 </span>
@@ -223,13 +223,13 @@ export function HabitCard({
           <div className="relative">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors"
+              className="w-8 h-8 rounded-xl flex items-center justify-center text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-[#181d2c] transition-colors"
             >
               <MoreVertical className="w-4 h-4" />
             </button>
 
             {menuOpen && (
-              <div className="absolute right-0 mt-1 w-44 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xl py-1 z-20 animate-in fade-in slide-in-from-top-1 text-xs">
+              <div className="absolute right-0 mt-1 w-44 rounded-2xl border border-zinc-200 dark:border-white/[0.1] bg-white dark:bg-[#151926] shadow-2xl dark:shadow-black/70 p-1 z-20 animate-in fade-in slide-in-from-top-1 text-xs">
                 {onOpenTimer && (
                   <button
                     onClick={() => {
@@ -243,7 +243,7 @@ export function HabitCard({
                         currentMinutes: currentVal,
                       });
                     }}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                    className="flex items-center gap-2 w-full px-3 py-2 rounded-xl text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-[#1c2234]"
                   >
                     <Timer className="w-3.5 h-3.5 text-emerald-500" /> Focus Timer
                   </button>
@@ -253,7 +253,7 @@ export function HabitCard({
                     setMenuOpen(false);
                     onOpenStats(habit);
                   }}
-                  className="flex items-center gap-2 w-full px-3 py-2 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  className="flex items-center gap-2 w-full px-3 py-2 rounded-xl text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-[#1c2234]"
                 >
                   <BarChart2 className="w-3.5 h-3.5 text-blue-500" /> Stats & History
                 </button>
@@ -262,7 +262,7 @@ export function HabitCard({
                     setMenuOpen(false);
                     onEditHabit(habit);
                   }}
-                  className="flex items-center gap-2 w-full px-3 py-2 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  className="flex items-center gap-2 w-full px-3 py-2 rounded-xl text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-[#1c2234]"
                 >
                   <Edit2 className="w-3.5 h-3.5 text-amber-500" /> Edit Habit
                 </button>
@@ -272,7 +272,7 @@ export function HabitCard({
                       setMenuOpen(false);
                       handleClearLog();
                     }}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-amber-600 dark:text-amber-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-t border-zinc-100 dark:border-zinc-800"
+                    className="flex items-center gap-2 w-full px-3 py-2 rounded-xl text-amber-600 dark:text-amber-400 hover:bg-zinc-100 dark:hover:bg-[#1c2234] border-t border-zinc-100 dark:border-white/[0.06]"
                   >
                     <RotateCcw className="w-3.5 h-3.5" /> Clear Today&apos;s Log
                   </button>
@@ -284,7 +284,7 @@ export function HabitCard({
                       onDeleteHabit(habit.id);
                     }
                   }}
-                  className="flex items-center gap-2 w-full px-3 py-2 text-red-600 dark:text-red-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-t border-zinc-100 dark:border-zinc-800"
+                  className="flex items-center gap-2 w-full px-3 py-2 rounded-xl text-red-600 dark:text-red-400 hover:bg-zinc-100 dark:hover:bg-[#1c2234] border-t border-zinc-100 dark:border-white/[0.06]"
                 >
                   <Trash2 className="w-3.5 h-3.5" /> Delete
                 </button>

@@ -13,6 +13,7 @@ import { DailyPlanner } from "@/components/daily-planner";
 import { ReminderBanner } from "@/components/reminder-banner";
 import { DateNavigator } from "@/components/date-navigator";
 import { TimerModal } from "@/components/timer-modal";
+import { Logo } from "@/components/logo";
 import {
   Plus,
   Flame,
@@ -105,7 +106,7 @@ export default function Home() {
 
   if (authLoading) {
     return (
-      <div className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center bg-zinc-50 dark:bg-black font-sans text-zinc-400">
+      <div className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center font-sans text-zinc-400">
         Loading traxx...
       </div>
     );
@@ -114,23 +115,26 @@ export default function Home() {
   // Signed out state
   if (!user) {
     return (
-      <div className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center bg-zinc-50 dark:bg-black font-sans p-4">
-        <div className="flex flex-col items-center text-center max-w-md w-full p-8 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800/80 rounded-3xl shadow-xl space-y-6">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
-            <Zap className="w-8 h-8" />
-          </div>
+      <div className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center p-4 font-sans">
+        {/* Ambient glow in background */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-[600px] h-[500px] bg-gradient-to-tr from-emerald-500/10 via-cyan-500/10 to-indigo-500/10 rounded-full blur-3xl opacity-70" />
+        </div>
+
+        <div className="relative flex flex-col items-center text-center max-w-md w-full p-8 bg-white dark:bg-[#11141d]/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/[0.08] rounded-3xl shadow-2xl space-y-6">
+          <Logo size="xl" showText={false} />
           <div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-white">
-              Welcome to traxx
+            <h1 className="text-3xl font-black tracking-tight text-zinc-900 dark:text-white">
+              Welcome to <span className="text-zinc-900 dark:text-white">tra</span><span className="bg-gradient-to-r from-emerald-500 via-cyan-500 to-indigo-500 bg-clip-text text-transparent">xx</span>
             </h1>
-            <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-              Your unified daily to-do planner & habit tracker with customizable weekday schedules, reminders, and streaks.
+            <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
+              Your unified daily to-do planner, focus countdown timer & habit tracker with customizable schedules, reminders, and streaks.
             </p>
           </div>
           <div className="w-full pt-2">
             <button
               onClick={() => router.push("/login")}
-              className="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2"
+              className="w-full py-3.5 px-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20 hover:scale-[1.01] transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               Sign In to Get Started
             </button>
@@ -156,17 +160,17 @@ export default function Home() {
   });
 
   return (
-    <div className="min-h-[calc(100vh-3.5rem)] bg-zinc-50/50 dark:bg-black font-sans text-zinc-900 dark:text-white">
+    <div className="min-h-[calc(100vh-4rem)] font-sans text-zinc-900 dark:text-zinc-100">
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-7 space-y-6">
         {/* Top App Header: Navigation Tabs & Create Buttons */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           {/* Main View Mode Navigation Tabs */}
-          <div className="flex items-center gap-2 bg-zinc-200/70 dark:bg-zinc-900 p-1.5 rounded-2xl w-fit shadow-xs">
+          <div className="flex items-center gap-2 bg-zinc-200/70 dark:bg-[#12151f] p-1.5 rounded-2xl w-fit border border-zinc-200/50 dark:border-white/[0.08] shadow-xs">
             <button
               onClick={() => setActiveTab("PLANNER")}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
                 activeTab === "PLANNER"
-                  ? "bg-white dark:bg-zinc-950 text-blue-600 dark:text-blue-400 shadow-sm"
+                  ? "bg-white dark:bg-[#1b202e] text-blue-600 dark:text-cyan-400 shadow-sm border border-transparent dark:border-white/[0.08]"
                   : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
               }`}
             >
@@ -177,7 +181,7 @@ export default function Home() {
               onClick={() => setActiveTab("HABITS")}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
                 activeTab === "HABITS"
-                  ? "bg-white dark:bg-zinc-950 text-blue-600 dark:text-blue-400 shadow-sm"
+                  ? "bg-white dark:bg-[#1b202e] text-blue-600 dark:text-cyan-400 shadow-sm border border-transparent dark:border-white/[0.08]"
                   : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
               }`}
             >
@@ -194,7 +198,7 @@ export default function Home() {
                   setEditingTask(null);
                   setIsCreateTaskOpen(true);
                 }}
-                className="w-full sm:w-auto px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-1.5"
+                className="w-full sm:w-auto px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 hover:scale-[1.02] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <Plus className="w-4 h-4" /> Add Task
               </button>
@@ -204,7 +208,7 @@ export default function Home() {
                   setEditingHabit(null);
                   setIsCreateHabitOpen(true);
                 }}
-                className="w-full sm:w-auto px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-1.5"
+                className="w-full sm:w-auto px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 hover:scale-[1.02] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <Plus className="w-4 h-4" /> New Habit
               </button>
@@ -248,7 +252,7 @@ export default function Home() {
           <div className="space-y-7">
             {/* Overview Stats Metrics Bar */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div className="p-4 bg-white dark:bg-zinc-950/80 border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl shadow-sm">
+              <div className="p-4 bg-white dark:bg-[#11141d]/90 border border-zinc-200/80 dark:border-white/[0.08] rounded-2xl shadow-xs dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.5)]">
                 <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs font-semibold">
                   <span>Total Habits</span>
                   <Layers className="w-4 h-4 text-blue-500" />
@@ -256,7 +260,7 @@ export default function Home() {
                 <div className="mt-2 text-2xl font-bold">{totalHabits}</div>
               </div>
 
-              <div className="p-4 bg-white dark:bg-zinc-950/80 border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl shadow-sm">
+              <div className="p-4 bg-white dark:bg-[#11141d]/90 border border-zinc-200/80 dark:border-white/[0.08] rounded-2xl shadow-xs dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.5)]">
                 <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs font-semibold">
                   <span>Due Today</span>
                   <CheckCircle2 className="w-4 h-4 text-emerald-500" />
@@ -266,7 +270,7 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="p-4 bg-white dark:bg-zinc-950/80 border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl shadow-sm">
+              <div className="p-4 bg-white dark:bg-[#11141d]/90 border border-zinc-200/80 dark:border-white/[0.08] rounded-2xl shadow-xs dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.5)]">
                 <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs font-semibold">
                   <span>Schedule Success</span>
                   <Activity className="w-4 h-4 text-purple-500" />
@@ -276,7 +280,7 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="p-4 bg-white dark:bg-zinc-950/80 border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl shadow-sm">
+              <div className="p-4 bg-white dark:bg-[#11141d]/90 border border-zinc-200/80 dark:border-white/[0.08] rounded-2xl shadow-xs dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.5)]">
                 <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs font-semibold">
                   <span>Top Active Streak</span>
                   <Flame className="w-4 h-4 text-amber-500 fill-amber-500/20" />
@@ -290,12 +294,12 @@ export default function Home() {
             {/* Filter Controls & Category Tabs */}
             <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
               {/* Type Filter Pills */}
-              <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl">
+              <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-[#11141d]/90 border border-zinc-200 dark:border-white/[0.08] rounded-2xl shadow-xs">
                 <button
                   onClick={() => setFilter("ALL")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors ${
                     filter === "ALL"
-                      ? "bg-zinc-900 dark:bg-white text-white dark:text-black shadow-sm"
+                      ? "bg-zinc-900 dark:bg-white text-white dark:text-black shadow-xs"
                       : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
                   }`}
                 >
@@ -303,9 +307,9 @@ export default function Home() {
                 </button>
                 <button
                   onClick={() => setFilter("TIME")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors ${
                     filter === "TIME"
-                      ? "bg-emerald-600 text-white shadow-sm"
+                      ? "bg-emerald-600 text-white shadow-xs"
                       : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
                   }`}
                 >
@@ -313,9 +317,9 @@ export default function Home() {
                 </button>
                 <button
                   onClick={() => setFilter("NUMERICAL")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors ${
                     filter === "NUMERICAL"
-                      ? "bg-blue-600 text-white shadow-sm"
+                      ? "bg-blue-600 text-white shadow-xs"
                       : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
                   }`}
                 >
@@ -323,9 +327,9 @@ export default function Home() {
                 </button>
                 <button
                   onClick={() => setFilter("STATUS")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors ${
                     filter === "STATUS"
-                      ? "bg-purple-600 text-white shadow-sm"
+                      ? "bg-purple-600 text-white shadow-xs"
                       : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
                   }`}
                 >
@@ -340,7 +344,7 @@ export default function Home() {
                   <select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="px-2.5 py-1.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-xs text-zinc-700 dark:text-zinc-300 focus:outline-none"
+                    className="px-3 py-1.5 bg-white dark:bg-[#12151f] border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-700 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-xs"
                   >
                     <option value="ALL">All Categories</option>
                     {categories.map((c) => (

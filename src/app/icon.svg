@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" fill="none">
+  <defs>
+    <linearGradient id="fav-bg" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stopColor="#1E2330" />
+      <stop offset="100%" stopColor="#090B10" />
+    </linearGradient>
+    <linearGradient id="fav-track" x1="2" y1="2" x2="30" y2="30" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stopColor="#10B981" />
+      <stop offset="50%" stopColor="#06B6D4" />
+      <stop offset="100%" stopColor="#6366F1" />
+    </linearGradient>
+    <linearGradient id="fav-accent" x1="8" y1="24" x2="26" y2="8" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stopColor="#34D399" />
+      <stop offset="100%" stopColor="#38BDF8" />
+    </linearGradient>
+  </defs>
+
+  <rect width="32" height="32" rx="8" fill="url(#fav-bg)" stroke="#10B981" stroke-opacity="0.3" stroke-width="1" />
+  <path d="M8 10C8 8.89543 8.89543 8 10 8H22C23.1046 8 24 8.89543 24 10C24 11.1046 23.1046 12 22 12H10C8.89543 12 8 11.1046 8 10Z" fill="url(#fav-track)" />
+  <path d="M13 11V22C13 23.1046 13.8954 24 15 24H17C18.1046 24 19 23.1046 19 22V11H13Z" fill="url(#fav-track)" />
+  <path d="M9 19L14 24L24 11" stroke="url(#fav-accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+  <circle cx="14" cy="24" r="1.5" fill="#FFFFFF" />
+</svg>
