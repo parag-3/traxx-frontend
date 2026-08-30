@@ -28,6 +28,7 @@ import {
   LayoutGrid,
   TrendingUp,
 } from "lucide-react";
+import { CelebrationModal, CelebrationData } from "@/components/celebration-modal";
 
 export default function Home() {
   const { user, loading: authLoading } = useAuth();
@@ -40,6 +41,9 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"ALL" | "TIME" | "NUMERICAL" | "STATUS">("ALL");
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
+
+  // Celebration state
+  const [celebrationData, setCelebrationData] = useState<CelebrationData | null>(null);
 
   // Selected calendar date (defaults to today)
   const getTodayIso = () => {
@@ -261,6 +265,7 @@ export default function Home() {
             onOpenStats={(habit) => setStatsHabit(habit)}
             onHabitsUpdated={fetchHabits}
             onOpenTimer={(target) => setTimerTarget(target)}
+            onTriggerCelebration={setCelebrationData}
           />
         ) : activeTab === "HABITS" ? (
           /* VIEW 2: HABITS DASHBOARD & METRICS */
@@ -391,6 +396,7 @@ export default function Home() {
                     }}
                     onDeleteHabit={handleDeleteHabit}
                     onOpenTimer={(target) => setTimerTarget(target)}
+                    onTriggerCelebration={setCelebrationData}
                   />
                 ))}
               </div>
@@ -463,6 +469,13 @@ export default function Home() {
         selectedDate={selectedDate}
         onClose={() => setTimerTarget(null)}
         onSuccess={fetchHabits}
+      />
+
+      {/* Celebratory Milestone & 100% Day Completion Modal with Physics Confetti */}
+      <CelebrationModal
+        data={celebrationData}
+        isOpen={!!celebrationData}
+        onClose={() => setCelebrationData(null)}
       />
     </div>
   );

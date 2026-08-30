@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { TimerTarget } from "@/types/habit";
 import { SpotlightCard } from "./spotlight-card";
+import { CelebrationData } from "./celebration-modal";
 
 interface HabitCardProps {
   habit: Habit;
@@ -40,6 +41,7 @@ interface HabitCardProps {
   onEditHabit: (habit: Habit) => void;
   onDeleteHabit: (habitId: string) => void;
   onOpenTimer?: (target: TimerTarget) => void;
+  onTriggerCelebration?: (data: CelebrationData) => void;
 }
 
 const ICON_MAP: Record<string, any> = {
@@ -64,6 +66,7 @@ export function HabitCard({
   onEditHabit,
   onDeleteHabit,
   onOpenTimer,
+  onTriggerCelebration,
 }: HabitCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [logging, setLogging] = useState(false);
@@ -98,6 +101,26 @@ export function HabitCard({
         }),
       });
       if (res.ok) {
+        const json = await res.json();
+        // Check for streak milestone celebration
+        if (json.log?.isCompleted && json.streaks?.currentStreak) {
+          const streak = json.streaks.currentStreak;
+          const MILESTONES = [1, 3, 5, 7, 10, 14, 15, 20, 25, 30, 40, 50, 60, 75, 90, 100, 180, 365];
+          if (MILESTONES.includes(streak) || (streak > 0 && streak % 10 === 0)) {
+            const streakKey = `streak-celebrated-${habit.id}-${selectedDate}-${streak}`;
+            if (typeof window !== "undefined" && !sessionStorage.getItem(streakKey)) {
+              sessionStorage.setItem(streakKey, "true");
+              onTriggerCelebration?.({
+                type: "STREAK_MILESTONE",
+                habitTitle: habit.title,
+                habitColor: habit.color,
+                habitIcon: habit.icon,
+                streakCount: streak,
+              });
+            }
+          }
+        }
+
         onLogUpdated();
       }
     } catch (err) {

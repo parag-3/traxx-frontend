@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Habit, Task, DailyPlanResponse, DailyPlanItem } from "@/types/habit";
 import { API_BASE_URL } from "@/lib/api";
 import {
@@ -39,6 +39,7 @@ import {
 import { TimerTarget } from "@/types/habit";
 import { SpotlightCard } from "./spotlight-card";
 import { SkeletonPlannerItem } from "./skeleton";
+import { CelebrationData } from "./celebration-modal";
 
 interface DailyPlannerProps {
   selectedDate: string;
@@ -49,6 +50,7 @@ interface DailyPlannerProps {
   onOpenStats: (habit: Habit) => void;
   onHabitsUpdated?: () => void;
   onOpenTimer?: (target: TimerTarget) => void;
+  onTriggerCelebration?: (data: CelebrationData) => void;
 }
 
 const ICON_MAP: Record<string, any> = {
@@ -74,6 +76,7 @@ export function DailyPlanner({
   onOpenStats,
   onHabitsUpdated,
   onOpenTimer,
+  onTriggerCelebration,
 }: DailyPlannerProps) {
   const [data, setData] = useState<DailyPlanResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -84,6 +87,9 @@ export function DailyPlanner({
   const [searchQuery, setSearchQuery] = useState("");
   const [submittingQuick, setSubmittingQuick] = useState(false);
   const [sidebarFocusMinutes, setSidebarFocusMinutes] = useState(25);
+
+  // Track previous completed count to detect when 100% completion is reached
+  const prevCompletedCountRef = useRef<number | null>(null);
 
   // Numerical entry inline modal/state
   const [numericalInputHabit, setNumericalInputHabit] = useState<Habit | null>(null);
@@ -96,15 +102,35 @@ export function DailyPlanner({
         credentials: "include",
       });
       if (res.ok) {
-        const result = await res.json();
+        const result: DailyPlanResponse = await res.json();
         setData(result);
+
+        // Check for 100% Daily Completion Celebration
+        if (result.summary && result.summary.totalCount > 0) {
+          const isAllCompleted = result.summary.completedCount === result.summary.totalCount;
+          const prev = prevCompletedCountRef.current;
+
+          if (isAllCompleted && prev !== null && prev < result.summary.totalCount) {
+            const key = `daily-perfect-${selectedDate}`;
+            if (typeof window !== "undefined" && !sessionStorage.getItem(key)) {
+              sessionStorage.setItem(key, "true");
+              onTriggerCelebration?.({
+                type: "DAILY_PERFECT",
+                completedCount: result.summary.completedCount,
+                totalCount: result.summary.totalCount,
+                date: selectedDate,
+              });
+            }
+          }
+          prevCompletedCountRef.current = result.summary.completedCount;
+        }
       }
     } catch (err) {
       console.error("Failed to fetch daily plan", err);
     } finally {
       setLoading(false);
     }
-  }, [selectedDate]);
+  }, [selectedDate, onTriggerCelebration]);
 
   useEffect(() => {
     fetchDailyPlan();
@@ -199,6 +225,26 @@ export function DailyPlanner({
         }),
       });
       if (res.ok) {
+        const json = await res.json();
+        // Check for streak milestone celebration
+        if (json.log?.isCompleted && json.streaks?.currentStreak) {
+          const streak = json.streaks.currentStreak;
+          const MILESTONES = [1, 3, 5, 7, 10, 14, 15, 20, 25, 30, 40, 50, 60, 75, 90, 100, 180, 365];
+          if (MILESTONES.includes(streak) || (streak > 0 && streak % 10 === 0)) {
+            const streakKey = `streak-celebrated-${habit.id}-${selectedDate}-${streak}`;
+            if (typeof window !== "undefined" && !sessionStorage.getItem(streakKey)) {
+              sessionStorage.setItem(streakKey, "true");
+              onTriggerCelebration?.({
+                type: "STREAK_MILESTONE",
+                habitTitle: habit.title,
+                habitColor: habit.color,
+                habitIcon: habit.icon,
+                streakCount: streak,
+              });
+            }
+          }
+        }
+
         fetchDailyPlan();
         if (onHabitsUpdated) onHabitsUpdated();
       }
