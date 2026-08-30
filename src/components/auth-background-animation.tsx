@@ -51,8 +51,9 @@ export function AuthBackgroundAnimation() {
       >
         <div className="animate-[bg-swoosh-float_8s_easeInOut_infinite]">
           <svg
-            viewBox="0 0 24 24"
-            className="w-[320px] sm:w-[540px] md:w-[680px] h-auto text-zinc-900/5 dark:text-white/[0.04] transition-all duration-300"
+            viewBox="-2 -2 28 28"
+            overflow="visible"
+            className="w-[340px] sm:w-[580px] md:w-[720px] h-auto overflow-visible text-zinc-900/5 dark:text-white/[0.04] transition-all duration-300"
             fill="currentColor"
             style={{
               filter: "drop-shadow(0 0 45px rgba(16, 185, 129, 0.18))",

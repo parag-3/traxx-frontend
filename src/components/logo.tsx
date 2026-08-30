@@ -38,12 +38,13 @@ export function LogoIcon({
     <div className={`relative flex items-center justify-center shrink-0 ${dim} ${className}`}>
       {/* Authentic Nike Swoosh SVG Vector */}
       <svg
-        viewBox="0 0 24 24"
+        viewBox="-1 -1 26 26"
+        overflow="visible"
         fill={isDrawing ? "none" : "currentColor"}
         stroke={isDrawing ? "currentColor" : "none"}
         strokeWidth={isDrawing ? 1.5 : 0}
         xmlns="http://www.w3.org/2000/svg"
-        className={`w-full h-full text-zinc-900 dark:text-white drop-shadow-sm ${
+        className={`w-full h-full overflow-visible text-zinc-900 dark:text-white drop-shadow-sm ${
           animated ? "transition-transform group-hover:scale-110 duration-200" : ""
         } ${isDrawing ? "animate-swoosh-draw" : ""}`}
       >

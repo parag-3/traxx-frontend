@@ -70,9 +70,10 @@ export function AuthLaunchAnimation({
             }`}
           >
             <svg
-              viewBox="0 0 24 24"
+              viewBox="-1 -1 26 26"
+              overflow="visible"
               xmlns="http://www.w3.org/2000/svg"
-              className="w-full h-full text-white"
+              className="w-full h-full overflow-visible text-white"
             >
               <defs>
                 <linearGradient id="launch-swoosh-grad" x1="0%" y1="100%" x2="100%" y2="0%">
