@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import { API_BASE_URL } from "@/lib/api";
 import { Habit } from "@/types/habit";
 import { TrendLineGraph, TimelineDataPoint } from "./trend-line-graph";
-import { WeekdayDistributionChart } from "./weekday-distribution-chart";
 import { SkeletonAnalyticsDashboard } from "./skeleton";
 import { SpotlightCard } from "./spotlight-card";
 import {
@@ -218,7 +217,7 @@ export function AnalyticsDashboard({
               No Time or Numerical Habits Created Yet
             </h3>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 max-w-sm mx-auto">
-              Create a Time-based habit (e.g. Deep Work, Reading) or Numerical habit (e.g. Pushups, Water) to see rich multi-chart visualizations (Line, Bar, Step, Scatter) and weekday productivity distributions!
+              Create a Time-based habit (e.g. Deep Work, Reading) or Numerical habit (e.g. Pushups, Water) to see rich multi-chart visualizations (Line, Column Bars, Step Staircase, and Scatter)!
             </p>
           </div>
           {onNavigateToHabits && (
@@ -343,17 +342,6 @@ export function AnalyticsDashboard({
                 showChartTypeSelector={true}
                 defaultChartType="LINE"
               />
-
-              {/* Day-of-Week Focus Distribution for this Habit */}
-              <div className="pt-4 border-t border-zinc-100 dark:border-white/[0.04]">
-                <WeekdayDistributionChart
-                  timeline={currentSelectedHabit.timeline || []}
-                  unit={currentSelectedHabit.type === "TIME" ? "mins" : currentSelectedHabit.unit || "units"}
-                  color={currentSelectedHabit.color || "#10B981"}
-                  title={`${currentSelectedHabit.title} — Weekday Distribution`}
-                  subtitle="Comparison of consistency across Monday through Sunday"
-                />
-              </div>
             </div>
           ) : (
             /* Portfolio Section View */
@@ -390,17 +378,6 @@ export function AnalyticsDashboard({
                     showChartTypeSelector={true}
                     defaultChartType="BAR"
                   />
-
-                  {/* Day-of-Week Breakdown */}
-                  <div className="pt-2 border-t border-zinc-100 dark:border-white/[0.04]">
-                    <WeekdayDistributionChart
-                      timeline={aggregateTimeTimeline}
-                      unit="mins"
-                      color="#10B981"
-                      title="Portfolio Focus Time by Day of Week"
-                      subtitle="Which days of the week do you log the most deep work?"
-                    />
-                  </div>
 
                   {/* Individual Time Habit Cards Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-zinc-100 dark:border-white/[0.04]">
@@ -483,17 +460,6 @@ export function AnalyticsDashboard({
                     showChartTypeSelector={true}
                     defaultChartType="BAR"
                   />
-
-                  {/* Day-of-Week Distribution for Numerical Habits */}
-                  <div className="pt-2 border-t border-zinc-100 dark:border-white/[0.04]">
-                    <WeekdayDistributionChart
-                      timeline={aggregateNumericalTimeline}
-                      unit="units"
-                      color="#3B82F6"
-                      title="Quantitative Output by Day of Week"
-                      subtitle="Weekly distribution of quantitative milestones"
-                    />
-                  </div>
 
                   {/* Individual Number Habit Cards Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
