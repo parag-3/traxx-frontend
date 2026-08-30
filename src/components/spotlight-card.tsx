@@ -48,7 +48,7 @@ export function SpotlightCard({
         }}
       />
       {/* Content wrapper */}
-      <div className="relative z-10 flex flex-col justify-between h-full">{children}</div>
+      <div className="relative z-10 w-full">{children}</div>
     </div>
   );
 }

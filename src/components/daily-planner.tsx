@@ -803,107 +803,109 @@ export function DailyPlanner({
         </div>
 
         {/* Right Column: Clean, Minimal Sticky Sidebar Hub (4 cols) */}
-        <div className="lg:col-span-4 space-y-4 lg:sticky lg:top-20">
+        <div className="lg:col-span-4 space-y-5 lg:sticky lg:top-20">
           {/* 1. Daily Progress Widget */}
           <SpotlightCard
             spotlightColor="rgba(59, 130, 246, 0.10)"
-            className="bg-white/80 dark:bg-[#11141d]/80 backdrop-blur-md border border-zinc-200/70 dark:border-white/[0.06] rounded-2xl p-5 shadow-xs space-y-4"
+            className="bg-white/80 dark:bg-[#11141d]/80 backdrop-blur-md border border-zinc-200/70 dark:border-white/[0.06] rounded-2xl p-5 sm:p-6 shadow-xs"
           >
-            {/* Header */}
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-cyan-400">
-                  {isToday ? "Today's Agenda" : "Day Overview"}
-                </span>
-                <h3 className="text-base font-extrabold text-zinc-900 dark:text-white mt-0.5">
-                  Daily Progress
-                </h3>
-              </div>
-              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-xl border border-emerald-200/50 dark:border-emerald-800/40">
-                {summary.completionPercentage}% Done
-              </span>
-            </div>
-
-            {/* Hero Progress Summary */}
-            <div className="flex items-center justify-between pt-1">
-              <div>
-                <div className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
-                  {summary.completedCount} <span className="text-sm font-semibold text-zinc-400">of {summary.totalCount} completed</span>
+            <div className="space-y-5">
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-cyan-400">
+                    {isToday ? "Today's Agenda" : "Day Overview"}
+                  </span>
+                  <h3 className="text-base font-extrabold text-zinc-900 dark:text-white mt-0.5">
+                    Daily Progress
+                  </h3>
                 </div>
-                <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                  {summary.totalCount === 0
-                    ? "No items scheduled for today"
-                    : summary.completedCount === summary.totalCount
-                    ? "✨ All tasks & habits finished!"
-                    : `${summary.totalCount - summary.completedCount} items left to complete`}
-                </div>
-              </div>
-
-              {/* Minimal Circular Progress Gauge */}
-              <div className="relative w-13 h-13 shrink-0 flex items-center justify-center">
-                <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
-                  <path
-                    className="text-zinc-100 dark:text-white/[0.06]"
-                    strokeWidth="3.5"
-                    stroke="currentColor"
-                    fill="none"
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                  />
-                  <path
-                    className="text-emerald-500 dark:text-emerald-400 transition-all duration-500 ease-out"
-                    strokeDasharray={`${summary.completionPercentage}, 100`}
-                    strokeWidth="3.5"
-                    strokeLinecap="round"
-                    stroke="currentColor"
-                    fill="none"
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                  />
-                </svg>
-                <span className="absolute text-[11px] font-black text-zinc-900 dark:text-white">
-                  {summary.completionPercentage}%
+                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-xl border border-emerald-200/50 dark:border-emerald-800/40">
+                  {summary.completionPercentage}% Done
                 </span>
               </div>
-            </div>
 
-            {/* Minimal Inline Breakdown Rows */}
-            <div className="space-y-2.5 pt-2 border-t border-zinc-100 dark:border-white/[0.04]">
-              {/* Habits Row */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs font-semibold">
-                  <span className="text-zinc-600 dark:text-zinc-300 flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-blue-500" /> Habits
-                  </span>
-                  <span className="text-zinc-900 dark:text-white font-bold">
-                    {summary.habitsCompleted} / {summary.habitsTotal}
-                  </span>
+              {/* Hero Progress Summary */}
+              <div className="flex items-center justify-between pt-1">
+                <div>
+                  <div className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
+                    {summary.completedCount} <span className="text-sm font-semibold text-zinc-400">of {summary.totalCount} completed</span>
+                  </div>
+                  <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                    {summary.totalCount === 0
+                      ? "No items scheduled for today"
+                      : summary.completedCount === summary.totalCount
+                      ? "✨ All tasks & habits finished!"
+                      : `${summary.totalCount - summary.completedCount} items left to complete`}
+                  </div>
                 </div>
-                <div className="w-full bg-zinc-100 dark:bg-white/[0.05] h-1.5 rounded-full overflow-hidden">
-                  <div
-                    className="bg-blue-500 h-full transition-all duration-300 rounded-full"
-                    style={{
-                      width: summary.habitsTotal > 0 ? `${(summary.habitsCompleted / summary.habitsTotal) * 100}%` : "0%",
-                    }}
-                  />
+
+                {/* Minimal Circular Progress Gauge */}
+                <div className="relative w-13 h-13 shrink-0 flex items-center justify-center">
+                  <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                    <path
+                      className="text-zinc-100 dark:text-white/[0.06]"
+                      strokeWidth="3.5"
+                      stroke="currentColor"
+                      fill="none"
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                    <path
+                      className="text-emerald-500 dark:text-emerald-400 transition-all duration-500 ease-out"
+                      strokeDasharray={`${summary.completionPercentage}, 100`}
+                      strokeWidth="3.5"
+                      strokeLinecap="round"
+                      stroke="currentColor"
+                      fill="none"
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                  </svg>
+                  <span className="absolute text-[11px] font-black text-zinc-900 dark:text-white">
+                    {summary.completionPercentage}%
+                  </span>
                 </div>
               </div>
 
-              {/* Tasks Row */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs font-semibold">
-                  <span className="text-zinc-600 dark:text-zinc-300 flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-purple-500" /> Tasks
-                  </span>
-                  <span className="text-zinc-900 dark:text-white font-bold">
-                    {summary.tasksCompleted} / {summary.tasksTotal}
-                  </span>
+              {/* Minimal Inline Breakdown Rows */}
+              <div className="space-y-3 pt-3 border-t border-zinc-100 dark:border-white/[0.04]">
+                {/* Habits Row */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs font-semibold">
+                    <span className="text-zinc-600 dark:text-zinc-300 flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-blue-500" /> Habits
+                    </span>
+                    <span className="text-zinc-900 dark:text-white font-bold">
+                      {summary.habitsCompleted} / {summary.habitsTotal}
+                    </span>
+                  </div>
+                  <div className="w-full bg-zinc-100 dark:bg-white/[0.05] h-1.5 rounded-full overflow-hidden">
+                    <div
+                      className="bg-blue-500 h-full transition-all duration-300 rounded-full"
+                      style={{
+                        width: summary.habitsTotal > 0 ? `${(summary.habitsCompleted / summary.habitsTotal) * 100}%` : "0%",
+                      }}
+                    />
+                  </div>
                 </div>
-                <div className="w-full bg-zinc-100 dark:bg-white/[0.05] h-1.5 rounded-full overflow-hidden">
-                  <div
-                    className="bg-purple-500 h-full transition-all duration-300 rounded-full"
-                    style={{
-                      width: summary.tasksTotal > 0 ? `${(summary.tasksCompleted / summary.tasksTotal) * 100}%` : "0%",
-                    }}
-                  />
+
+                {/* Tasks Row */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs font-semibold">
+                    <span className="text-zinc-600 dark:text-zinc-300 flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-purple-500" /> Tasks
+                    </span>
+                    <span className="text-zinc-900 dark:text-white font-bold">
+                      {summary.tasksCompleted} / {summary.tasksTotal}
+                    </span>
+                  </div>
+                  <div className="w-full bg-zinc-100 dark:bg-white/[0.05] h-1.5 rounded-full overflow-hidden">
+                    <div
+                      className="bg-purple-500 h-full transition-all duration-300 rounded-full"
+                      style={{
+                        width: summary.tasksTotal > 0 ? `${(summary.tasksCompleted / summary.tasksTotal) * 100}%` : "0%",
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -913,65 +915,69 @@ export function DailyPlanner({
           {onOpenTimer && (
             <SpotlightCard
               spotlightColor="rgba(16, 185, 129, 0.10)"
-              className="bg-white/80 dark:bg-[#11141d]/80 backdrop-blur-md border border-zinc-200/70 dark:border-white/[0.06] rounded-2xl p-5 shadow-xs space-y-4"
+              className="bg-white/80 dark:bg-[#11141d]/80 backdrop-blur-md border border-zinc-200/70 dark:border-white/[0.06] rounded-2xl p-5 sm:p-6 shadow-xs"
             >
-              {/* Header */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shadow-xs">
-                    <Timer className="w-4 h-4" />
+              <div className="space-y-4">
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shadow-xs">
+                      <Timer className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
+                        Focus Countdown
+                      </h3>
+                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                        Pomodoro & deep work sessions
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
-                      Focus Countdown
-                    </h3>
-                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                      Pomodoro & deep work sessions
-                    </p>
-                  </div>
+                  <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 rounded-lg border border-emerald-200/50 dark:border-emerald-800/40">
+                    {sidebarFocusMinutes}m
+                  </span>
                 </div>
-                <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 rounded-lg border border-emerald-200/50 dark:border-emerald-800/40">
-                  {sidebarFocusMinutes}m
-                </span>
-              </div>
 
-              {/* Floating Preset Pills with Clean Negative Space */}
-              <div className="grid grid-cols-5 gap-2">
-                {[15, 25, 30, 45, 60].map((mins) => {
-                  const isActive = sidebarFocusMinutes === mins;
-                  return (
-                    <button
-                      key={mins}
-                      type="button"
-                      onClick={() => setSidebarFocusMinutes(mins)}
-                      className={`py-2 text-xs font-bold rounded-xl transition-all cursor-pointer border ${
-                        isActive
-                          ? "bg-emerald-500/15 dark:bg-emerald-500/20 border-emerald-500/50 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/30 shadow-xs"
-                          : "bg-zinc-50/60 dark:bg-white/[0.03] border-zinc-200/60 dark:border-white/[0.05] text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/[0.08]"
-                      }`}
-                    >
-                      {mins}m
-                    </button>
-                  );
-                })}
-              </div>
+                {/* Floating Preset Pills with Clean Negative Space */}
+                <div className="grid grid-cols-5 gap-2 pt-1">
+                  {[15, 25, 30, 45, 60].map((mins) => {
+                    const isActive = sidebarFocusMinutes === mins;
+                    return (
+                      <button
+                        key={mins}
+                        type="button"
+                        onClick={() => setSidebarFocusMinutes(mins)}
+                        className={`py-2 text-xs font-bold rounded-xl transition-all cursor-pointer border ${
+                          isActive
+                            ? "bg-emerald-500/15 dark:bg-emerald-500/20 border-emerald-500/50 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/30 shadow-xs"
+                            : "bg-zinc-50/60 dark:bg-white/[0.03] border-zinc-200/60 dark:border-white/[0.05] text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/[0.08]"
+                        }`}
+                      >
+                        {mins}m
+                      </button>
+                    );
+                  })}
+                </div>
 
-              {/* Start Session Action Button */}
-              <button
-                onClick={() =>
-                  onOpenTimer({
-                    type: "GENERIC",
-                    id: "quick-focus",
-                    title: "Deep Work Focus Session",
-                    color: "#10B981",
-                    targetMinutes: sidebarFocusMinutes,
-                    currentMinutes: 0,
-                  })
-                }
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white text-xs sm:text-sm font-bold shadow-md shadow-emerald-500/20 hover:scale-[1.01] transition-all flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <Play className="w-3.5 h-3.5 fill-current" /> Start {sidebarFocusMinutes}-Min Timer
-              </button>
+                {/* Start Session Action Button with Generous Top Gap */}
+                <div className="pt-2">
+                  <button
+                    onClick={() =>
+                      onOpenTimer({
+                        type: "GENERIC",
+                        id: "quick-focus",
+                        title: "Deep Work Focus Session",
+                        color: "#10B981",
+                        targetMinutes: sidebarFocusMinutes,
+                        currentMinutes: 0,
+                      })
+                    }
+                    className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white text-xs sm:text-sm font-bold shadow-md shadow-emerald-500/20 hover:scale-[1.01] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Play className="w-3.5 h-3.5 fill-current" /> Start {sidebarFocusMinutes}-Min Timer
+                  </button>
+                </div>
+              </div>
             </SpotlightCard>
           )}
 
