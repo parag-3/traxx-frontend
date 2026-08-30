@@ -117,9 +117,9 @@ export function DateNavigator({ selectedDate, onSelectDate, refreshTrigger }: Da
   const getHeatmapStyles = (percent: number, hasItems: boolean, isSelected: boolean) => {
     if (!hasItems || percent === 0) {
       return {
-        card: "bg-zinc-50 dark:bg-zinc-900/60 border-zinc-200/80 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300",
-        badge: "text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800/80",
-        dayLabel: isSelected ? "text-blue-600 dark:text-blue-400 font-black" : "text-zinc-400 dark:text-zinc-500 font-bold",
+        card: "bg-zinc-50 dark:bg-[#151926] border-zinc-200/80 dark:border-white/[0.06] hover:bg-zinc-100 dark:hover:bg-[#1c2234] text-zinc-700 dark:text-zinc-300",
+        badge: "text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-[#1e2436]",
+        dayLabel: isSelected ? "text-blue-600 dark:text-cyan-400 font-black" : "text-zinc-400 dark:text-zinc-500 font-bold",
         numColor: isSelected ? "text-zinc-950 dark:text-white" : "text-zinc-700 dark:text-zinc-300",
       };
     }
@@ -139,7 +139,7 @@ export function DateNavigator({ selectedDate, onSelectDate, refreshTrigger }: Da
       return {
         card: "bg-emerald-500/25 dark:bg-emerald-800/60 border-emerald-400/80 dark:border-emerald-600 text-emerald-950 dark:text-emerald-100",
         badge: "bg-emerald-500 text-white dark:bg-emerald-600 dark:text-white font-bold",
-        dayLabel: isSelected ? "text-blue-600 dark:text-blue-400 font-black" : "text-emerald-700 dark:text-emerald-300 font-bold",
+        dayLabel: isSelected ? "text-blue-600 dark:text-cyan-400 font-black" : "text-emerald-700 dark:text-emerald-300 font-bold",
         numColor: "text-emerald-950 dark:text-emerald-100 font-extrabold",
       };
     }
@@ -149,7 +149,7 @@ export function DateNavigator({ selectedDate, onSelectDate, refreshTrigger }: Da
       return {
         card: "bg-emerald-500/15 dark:bg-emerald-900/40 border-emerald-300/70 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200",
         badge: "bg-emerald-200/80 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold",
-        dayLabel: isSelected ? "text-blue-600 dark:text-blue-400 font-black" : "text-emerald-600 dark:text-emerald-400 font-bold",
+        dayLabel: isSelected ? "text-blue-600 dark:text-cyan-400 font-black" : "text-emerald-600 dark:text-emerald-400 font-bold",
         numColor: "text-emerald-900 dark:text-emerald-200 font-extrabold",
       };
     }
@@ -158,13 +158,13 @@ export function DateNavigator({ selectedDate, onSelectDate, refreshTrigger }: Da
     return {
       card: "bg-emerald-500/10 dark:bg-emerald-950/30 border-emerald-200/60 dark:border-emerald-900/40 text-emerald-900 dark:text-emerald-300",
       badge: "bg-emerald-100/70 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 font-semibold",
-      dayLabel: isSelected ? "text-blue-600 dark:text-blue-400 font-black" : "text-emerald-600/80 dark:text-emerald-400/80 font-bold",
+      dayLabel: isSelected ? "text-blue-600 dark:text-cyan-400 font-black" : "text-emerald-600/80 dark:text-emerald-400/80 font-bold",
       numColor: "text-emerald-900 dark:text-emerald-300 font-bold",
     };
   };
 
   return (
-    <div className="bg-white dark:bg-zinc-950 border border-zinc-200/90 dark:border-zinc-800/80 rounded-3xl p-4 shadow-sm space-y-3.5">
+    <div className="bg-white dark:bg-[#11141d]/90 backdrop-blur-md border border-zinc-200/80 dark:border-white/[0.08] rounded-3xl p-4 sm:p-5 shadow-xs dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.5)] space-y-3.5">
       {/* Top row: Direct Picker, Day Shift, Jump to Today, Week Shift */}
       <div className="flex flex-wrap items-center justify-between gap-3 px-1">
         {/* Left: Date Display & Direct Picker Trigger */}
@@ -183,7 +183,7 @@ export function DateNavigator({ selectedDate, onSelectDate, refreshTrigger }: Da
             />
             <button
               type="button"
-              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-900 dark:text-white transition-colors cursor-pointer shadow-xs"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-zinc-100 dark:bg-[#151926] hover:bg-zinc-200 dark:hover:bg-[#1e2334] border border-zinc-200/80 dark:border-white/[0.08] text-zinc-900 dark:text-white transition-colors cursor-pointer shadow-xs"
             >
               <Calendar className="w-4 h-4 text-blue-500" />
               <span className="text-xs sm:text-sm font-bold">{formatDateLabel(selectedDate)}</span>
@@ -192,11 +192,11 @@ export function DateNavigator({ selectedDate, onSelectDate, refreshTrigger }: Da
           </div>
 
           {/* Quick Step Day Buttons */}
-          <div className="flex items-center bg-zinc-100 dark:bg-zinc-900 rounded-xl p-0.5 shadow-xs">
+          <div className="flex items-center bg-zinc-100 dark:bg-[#151926] border border-zinc-200/80 dark:border-white/[0.08] rounded-2xl p-0.5 shadow-xs">
             <button
               type="button"
               onClick={() => handleShiftDays(-1)}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-white dark:hover:bg-zinc-800 transition-colors"
+              className="w-8 h-8 rounded-xl flex items-center justify-center text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-white dark:hover:bg-[#1e2334] transition-colors cursor-pointer"
               title="Previous Day"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -204,7 +204,7 @@ export function DateNavigator({ selectedDate, onSelectDate, refreshTrigger }: Da
             <button
               type="button"
               onClick={() => handleShiftDays(1)}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-white dark:hover:bg-zinc-800 transition-colors"
+              className="w-8 h-8 rounded-xl flex items-center justify-center text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-white dark:hover:bg-[#1e2334] transition-colors cursor-pointer"
               title="Next Day"
             >
               <ChevronRight className="w-4 h-4" />
@@ -219,14 +219,14 @@ export function DateNavigator({ selectedDate, onSelectDate, refreshTrigger }: Da
             <button
               type="button"
               onClick={() => onSelectDate(todayIso)}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-500/20 transition-all animate-pulse"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-500/20 hover:scale-[1.02] transition-all cursor-pointer animate-pulse"
               title="Jump to Today's date"
             >
               <Zap className="w-3.5 h-3.5" />
               <span>Jump to Today</span>
             </button>
           ) : (
-            <span className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 px-3 py-1.5 rounded-xl border border-blue-200/60 dark:border-blue-900/40">
+            <span className="text-xs font-bold text-blue-600 dark:text-cyan-400 bg-blue-50 dark:bg-blue-950/50 px-3 py-1.5 rounded-2xl border border-blue-200/60 dark:border-blue-900/40">
               ⚡ Today
             </span>
           )}
@@ -236,7 +236,7 @@ export function DateNavigator({ selectedDate, onSelectDate, refreshTrigger }: Da
             <button
               type="button"
               onClick={() => handleShiftWeek(-1)}
-              className="px-2.5 py-1.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors font-medium"
+              className="px-2.5 py-1.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-[#151926] transition-colors font-medium cursor-pointer"
               title="Previous Week (-7 days)"
             >
               &larr; Prev Week
@@ -244,7 +244,7 @@ export function DateNavigator({ selectedDate, onSelectDate, refreshTrigger }: Da
             <button
               type="button"
               onClick={() => handleShiftWeek(1)}
-              className="px-2.5 py-1.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors font-medium"
+              className="px-2.5 py-1.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-[#151926] transition-colors font-medium cursor-pointer"
               title="Next Week (+7 days)"
             >
               Next Week &rarr;

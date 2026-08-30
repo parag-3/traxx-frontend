@@ -158,7 +158,7 @@ export function TimerModal({
           }),
         });
         if (!res.ok) throw new Error("Failed to log habit time");
-      } else {
+      } else if (target.type === "TASK") {
         // Log time spent on task
         const isComp = completeTaskOverride !== undefined ? completeTaskOverride : markTaskComplete;
         const res = await fetch(`${API_BASE_URL}/api/tasks/${target.id}/log-time`, {

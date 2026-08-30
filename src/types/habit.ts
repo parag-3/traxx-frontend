@@ -112,7 +112,7 @@ export interface Task {
 }
 
 export interface TimerTarget {
-  type: 'HABIT' | 'TASK';
+  type: 'HABIT' | 'TASK' | 'GENERIC';
   id: string;
   title: string;
   color: string;

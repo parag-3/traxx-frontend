@@ -30,6 +30,7 @@ import {
   Play,
 } from "lucide-react";
 import { TimerTarget } from "@/types/habit";
+import { SpotlightCard } from "./spotlight-card";
 
 interface HabitCardProps {
   habit: Habit;
@@ -169,8 +170,9 @@ export function HabitCard({
   }
 
   return (
-    <div
-      className={`group relative rounded-3xl p-5 border transition-all duration-200 bg-white dark:bg-[#11141d]/90 backdrop-blur-md flex flex-col justify-between ${
+    <SpotlightCard
+      spotlightColor={`${habit.color}28`}
+      className={`group rounded-3xl p-5 border bg-white dark:bg-[#11141d]/90 backdrop-blur-md ${
         todayLog?.isCompleted
           ? "border-emerald-500/40 dark:border-emerald-500/50 shadow-sm shadow-emerald-500/10 ring-1 ring-emerald-500/20"
           : isRestDay
@@ -617,6 +619,6 @@ export function HabitCard({
           </div>
         </div>
       </div>
-    </div>
+    </SpotlightCard>
   );
 }
