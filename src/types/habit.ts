@@ -67,6 +67,16 @@ export interface NumericalStats {
   unit: string | null;
   targetValue: number | null;
   aggregationType: string | null;
+  dailyTimeline?: { date: string; value: number; isCompleted: boolean; target?: number }[];
+}
+
+export interface TimeStats {
+  totalMinutes: number;
+  totalHours: number;
+  dailyAverageMinutes: number;
+  maxMinutes: number;
+  targetMinutes: number;
+  dailyTimeline?: { date: string; value: number; isCompleted: boolean; target?: number }[];
 }
 
 export interface StatusDistributionItem {
@@ -82,12 +92,17 @@ export interface HabitStats {
   habitId: string;
   title: string;
   type: HabitType;
+  category?: string | null;
+  color?: string;
+  icon?: string;
+  startDate?: string;
   currentStreak: number;
   bestStreak: number;
   totalLoggedDays: number;
   completedDays: number;
   completionRate: string;
   numericalStats: NumericalStats | null;
+  timeStats?: TimeStats | null;
   statusDistribution: StatusDistributionItem[];
 }
 

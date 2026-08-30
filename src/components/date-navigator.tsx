@@ -10,6 +10,7 @@ import {
   Check,
 } from "lucide-react";
 import { API_BASE_URL } from "@/lib/api";
+import { SkeletonWeekStrip } from "./skeleton";
 
 interface DateNavigatorProps {
   selectedDate: string;
@@ -26,6 +27,7 @@ interface DayStat {
 export function DateNavigator({ selectedDate, onSelectDate, refreshTrigger }: DateNavigatorProps) {
   const dateInputRef = useRef<HTMLInputElement>(null);
   const [weekStats, setWeekStats] = useState<Record<string, DayStat>>({});
+  const [loadingWeekStats, setLoadingWeekStats] = useState(false);
 
   const getTodayIso = () => {
     const d = new Date();
@@ -96,6 +98,7 @@ export function DateNavigator({ selectedDate, onSelectDate, refreshTrigger }: Da
     if (!startIso || !endIso) return;
 
     try {
+      setLoadingWeekStats(true);
       const res = await fetch(
         `${API_BASE_URL}/api/daily-plan/week-stats?startDate=${startIso}&endDate=${endIso}`,
         { credentials: "include" }
@@ -106,6 +109,8 @@ export function DateNavigator({ selectedDate, onSelectDate, refreshTrigger }: Da
       }
     } catch (err) {
       console.error("Failed to fetch week stats", err);
+    } finally {
+      setLoadingWeekStats(false);
     }
   }, [weekDays[0]?.iso, weekDays[6]?.iso]);
 
@@ -240,24 +245,27 @@ export function DateNavigator({ selectedDate, onSelectDate, refreshTrigger }: Da
       </div>
 
       {/* Sleek Minimal 7-Day Week Strip with comfortable negative space */}
-      <div className="grid grid-cols-7 gap-2 sm:gap-3">
-        {weekDays.map((day) => {
-          const stat = weekStats[day.iso] || { totalCount: 0, completedCount: 0, percentage: 0 };
-          const percent = stat.percentage;
-          const hasItems = stat.totalCount > 0;
-          const is100 = percent === 100 && hasItems;
-          const styles = getHeatmapStyles(percent, hasItems, day.isSelected);
+      {loadingWeekStats && Object.keys(weekStats).length === 0 ? (
+        <SkeletonWeekStrip />
+      ) : (
+        <div className="grid grid-cols-7 gap-2 sm:gap-3">
+          {weekDays.map((day) => {
+            const stat = weekStats[day.iso] || { totalCount: 0, completedCount: 0, percentage: 0 };
+            const percent = stat.percentage;
+            const hasItems = stat.totalCount > 0;
+            const is100 = percent === 100 && hasItems;
+            const styles = getHeatmapStyles(percent, hasItems, day.isSelected);
 
-          return (
-            <button
-              key={day.iso}
-              type="button"
-              onClick={() => onSelectDate(day.iso)}
-              className={`group relative h-15 sm:h-17 rounded-xl flex flex-col justify-between p-2 sm:p-2.5 transition-all duration-150 text-center border cursor-pointer ${
-                styles.card
-              } ${day.isSelected ? "scale-[1.02] z-10" : ""}`}
-              title={`${day.iso}: ${stat.completedCount}/${stat.totalCount} completed (${percent}%)`}
-            >
+            return (
+              <button
+                key={day.iso}
+                type="button"
+                onClick={() => onSelectDate(day.iso)}
+                className={`group relative h-15 sm:h-17 rounded-xl flex flex-col justify-between p-2 sm:p-2.5 transition-all duration-150 text-center border cursor-pointer ${
+                  styles.card
+                } ${day.isSelected ? "scale-[1.02] z-10" : ""}`}
+                title={`${day.iso}: ${stat.completedCount}/${stat.totalCount} completed (${percent}%)`}
+              >
               {/* Top: Day Name + Today Indicator */}
               <div className="flex items-center justify-between w-full">
                 <span className={`text-[10px] uppercase tracking-wider ${styles.dayLabel}`}>
@@ -291,9 +299,10 @@ export function DateNavigator({ selectedDate, onSelectDate, refreshTrigger }: Da
                 />
               </div>
             </button>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

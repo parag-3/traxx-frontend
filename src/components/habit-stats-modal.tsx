@@ -20,7 +20,10 @@ import {
   Plus,
   Minus,
   Sparkles,
+  Clock,
 } from "lucide-react";
+import { SkeletonStatsModal } from "./skeleton";
+import { TrendLineGraph } from "./trend-line-graph";
 
 interface HabitStatsModalProps {
   habit: Habit | null;
@@ -253,8 +256,10 @@ export function HabitStatsModal({ habit, isOpen, onClose, onHabitUpdated }: Habi
           </button>
         </div>
 
-        {loading ? (
-          <div className="p-16 text-center text-xs text-zinc-400">Loading analytics...</div>
+        {loading && !stats ? (
+          <div className="p-5 sm:p-6">
+            <SkeletonStatsModal />
+          </div>
         ) : (
           <div className="p-5 sm:p-6 space-y-6">
             {/* Top Streaks & Overview Cards */}
@@ -300,9 +305,61 @@ export function HabitStatsModal({ habit, isOpen, onClose, onHabitUpdated }: Habi
               </div>
             </div>
 
-            {/* Numerical Specific Stats */}
+            {/* Time-Based Habit Specific Stats & Spline Line Graph */}
+            {habit.type === "TIME" && stats?.timeStats && (
+              <div className="p-5 bg-zinc-50 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-3xl space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
+                    <Clock className="w-4 h-4 text-emerald-500" /> Focus Time Aggregations
+                  </div>
+                  <span className="text-xs text-zinc-400 font-medium">
+                    Daily Goal: {stats.timeStats.targetMinutes} mins
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3 text-center">
+                  <div className="p-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl">
+                    <div className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">Total Time</div>
+                    <div className="text-lg font-bold text-zinc-900 dark:text-white mt-0.5">
+                      {stats.timeStats.totalHours}{" "}
+                      <span className="text-xs font-normal text-zinc-400">hrs ({stats.timeStats.totalMinutes}m)</span>
+                    </div>
+                  </div>
+                  <div className="p-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl">
+                    <div className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">Daily Average</div>
+                    <div className="text-lg font-bold text-zinc-900 dark:text-white mt-0.5">
+                      {stats.timeStats.dailyAverageMinutes}{" "}
+                      <span className="text-xs font-normal text-zinc-400">mins/day</span>
+                    </div>
+                  </div>
+                  <div className="p-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl">
+                    <div className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">Longest Session</div>
+                    <div className="text-lg font-bold text-zinc-900 dark:text-white mt-0.5">
+                      {stats.timeStats.maxMinutes}{" "}
+                      <span className="text-xs font-normal text-zinc-400">mins</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Interactive Spline Line Graph */}
+                <div className="pt-2">
+                  <TrendLineGraph
+                    data={stats.timeStats.dailyTimeline || []}
+                    unit="mins"
+                    color={habit.color || "#10B981"}
+                    targetValue={stats.timeStats.targetMinutes}
+                    title="Focus Minutes Progression Trend"
+                    subtitle="Interactive daily focus time curve vs goal threshold"
+                    height={210}
+                    showTimeframes={true}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Numerical Specific Stats & Spline Line Graph */}
             {habit.type === "NUMERICAL" && stats?.numericalStats && (
-              <div className="p-4 bg-zinc-50 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl space-y-3">
+              <div className="p-5 bg-zinc-50 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-3xl space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
                     <TrendingUp className="w-4 h-4 text-blue-500" /> Numerical Aggregations
@@ -334,6 +391,20 @@ export function HabitStatsModal({ habit, isOpen, onClose, onHabitUpdated }: Habi
                       <span className="text-xs font-normal text-zinc-400">{stats.numericalStats.unit}</span>
                     </div>
                   </div>
+                </div>
+
+                {/* Interactive Spline Line Graph */}
+                <div className="pt-2">
+                  <TrendLineGraph
+                    data={stats.numericalStats.dailyTimeline || []}
+                    unit={stats.numericalStats.unit || "units"}
+                    color={habit.color || "#3B82F6"}
+                    targetValue={stats.numericalStats.targetValue || 0}
+                    title="Output Progression Trend"
+                    subtitle="Interactive daily quantity logged vs target goal"
+                    height={210}
+                    showTimeframes={true}
+                  />
                 </div>
               </div>
             )}

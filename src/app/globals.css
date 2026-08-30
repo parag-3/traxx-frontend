@@ -76,3 +76,10 @@ body {
 .dark ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.25);
 }
+
+/* YouTube/Instagram Wave Shimmer Animation */
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}

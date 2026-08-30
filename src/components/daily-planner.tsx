@@ -38,6 +38,7 @@ import {
 } from "lucide-react";
 import { TimerTarget } from "@/types/habit";
 import { SpotlightCard } from "./spotlight-card";
+import { SkeletonPlannerItem } from "./skeleton";
 
 interface DailyPlannerProps {
   selectedDate: string;
@@ -438,7 +439,11 @@ export function DailyPlanner({
 
           {/* Unified To-Do Items List with SpotlightCard */}
           {loading && allItems.length === 0 ? (
-            <div className="py-20 text-center text-xs text-zinc-400">Loading daily plan...</div>
+            <div className="space-y-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <SkeletonPlannerItem key={i} />
+              ))}
+            </div>
           ) : filteredItems.length > 0 ? (
             <div className="space-y-3">
               {filteredItems.map((item) => {
