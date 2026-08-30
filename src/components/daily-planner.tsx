@@ -308,24 +308,24 @@ export function DailyPlanner({
   });
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* 2-Column Responsive Workspace Grid on Desktop */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Quick Add Bar, Filter Controls & Items Checklist (8 cols) */}
-        <div className="lg:col-span-8 space-y-3.5">
+        <div className="lg:col-span-8 space-y-4">
           {/* Quick Add Bar */}
-          <div className="bg-white/80 dark:bg-[#11141d]/80 backdrop-blur-md border border-zinc-200/70 dark:border-white/[0.06] rounded-2xl p-2.5 sm:p-3 shadow-xs">
-            <form onSubmit={handleQuickAddTask} className="flex flex-col sm:flex-row items-center gap-2">
+          <div className="bg-white/80 dark:bg-[#11141d]/80 backdrop-blur-md border border-zinc-200/70 dark:border-white/[0.06] rounded-2xl p-3.5 sm:p-4 shadow-xs">
+            <form onSubmit={handleQuickAddTask} className="flex flex-col sm:flex-row items-center gap-3">
               <div className="relative flex-1 w-full">
                 <input
                   type="text"
                   placeholder="Add a task for today (e.g. Finish pitch deck, Buy groceries)..."
                   value={quickTitle}
                   onChange={(e) => setQuickTitle(e.target.value)}
-                  className="w-full pl-3 pr-20 py-2 bg-zinc-50/80 dark:bg-[#151926] border border-zinc-200/60 dark:border-white/[0.06] rounded-xl text-xs sm:text-sm text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:ring-1.5 focus:ring-blue-500 transition-all"
+                  className="w-full pl-4 pr-24 py-2.5 bg-zinc-50/80 dark:bg-[#151926] border border-zinc-200/60 dark:border-white/[0.06] rounded-xl text-xs sm:text-sm text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all"
                 />
                 {/* Quick Priority Toggle inside input */}
-                <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                   <button
                     type="button"
                     onClick={() =>
@@ -333,7 +333,7 @@ export function DailyPlanner({
                         quickPriority === "LOW" ? "MEDIUM" : quickPriority === "MEDIUM" ? "HIGH" : "LOW"
                       )
                     }
-                    className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase transition-colors ${
+                    className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase transition-colors cursor-pointer ${
                       quickPriority === "HIGH"
                         ? "bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400"
                         : quickPriority === "MEDIUM"
@@ -347,33 +347,33 @@ export function DailyPlanner({
                 </div>
               </div>
 
-              <div className="flex items-center gap-1.5 w-full sm:w-auto">
+              <div className="flex items-center gap-2.5 w-full sm:w-auto">
                 <button
                   type="submit"
                   disabled={!quickTitle.trim() || submittingQuick}
-                  className="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white text-xs font-semibold shadow-xs transition-all flex items-center justify-center gap-1 shrink-0 cursor-pointer"
+                  className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white text-xs sm:text-sm font-semibold shadow-md shadow-blue-500/20 hover:scale-[1.02] transition-all flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
                 >
-                  <Plus className="w-3.5 h-3.5" /> Add
+                  <Plus className="w-4 h-4" /> Add Task
                 </button>
                 <button
                   type="button"
                   onClick={onOpenCreateTask}
-                  className="px-3 py-2 rounded-xl border border-zinc-200/70 dark:border-white/[0.06] hover:bg-zinc-100 dark:hover:bg-[#181d2a] text-zinc-600 dark:text-zinc-300 text-xs font-medium transition-colors shrink-0 cursor-pointer"
+                  className="px-4 py-2.5 rounded-xl border border-zinc-200/70 dark:border-white/[0.06] hover:bg-zinc-100 dark:hover:bg-[#181d2a] text-zinc-600 dark:text-zinc-300 text-xs sm:text-sm font-medium transition-colors shrink-0 cursor-pointer"
                   title="Open full task creator with time, category & reminders"
                 >
-                  More...
+                  More Options...
                 </button>
               </div>
             </form>
           </div>
 
-          {/* Filter Tabs & Search Bar */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+          {/* Filter Tabs & Search Bar with generous spacing */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             {/* Filter Pills */}
-            <div className="flex flex-wrap items-center gap-1 p-0.5 bg-white/80 dark:bg-[#11141d]/80 border border-zinc-200/70 dark:border-white/[0.06] rounded-xl shadow-xs">
+            <div className="flex flex-wrap items-center gap-1.5 p-1 bg-white/80 dark:bg-[#11141d]/80 border border-zinc-200/70 dark:border-white/[0.06] rounded-2xl shadow-xs">
               <button
                 onClick={() => setFilter("ALL")}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
                   filter === "ALL"
                     ? "bg-zinc-900 dark:bg-white text-white dark:text-black shadow-xs"
                     : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
@@ -383,7 +383,7 @@ export function DailyPlanner({
               </button>
               <button
                 onClick={() => setFilter("HABITS")}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
                   filter === "HABITS"
                     ? "bg-blue-600 text-white shadow-xs"
                     : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
@@ -393,7 +393,7 @@ export function DailyPlanner({
               </button>
               <button
                 onClick={() => setFilter("TASKS")}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
                   filter === "TASKS"
                     ? "bg-purple-600 text-white shadow-xs"
                     : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
@@ -403,7 +403,7 @@ export function DailyPlanner({
               </button>
               <button
                 onClick={() => setFilter("PENDING")}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
                   filter === "PENDING"
                     ? "bg-amber-600 text-white shadow-xs"
                     : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
@@ -413,7 +413,7 @@ export function DailyPlanner({
               </button>
               <button
                 onClick={() => setFilter("COMPLETED")}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
                   filter === "COMPLETED"
                     ? "bg-emerald-600 text-white shadow-xs"
                     : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
@@ -424,14 +424,14 @@ export function DailyPlanner({
             </div>
 
             {/* Search Filter */}
-            <div className="relative w-full sm:w-48">
-              <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400" />
+            <div className="relative w-full sm:w-56">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
               <input
                 type="text"
                 placeholder="Search items..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-2.5 py-1.5 bg-white/80 dark:bg-[#12151f] border border-zinc-200/70 dark:border-white/[0.06] rounded-xl text-xs text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-xs"
+                className="w-full pl-9 pr-3 py-2 bg-white/80 dark:bg-[#12151f] border border-zinc-200/70 dark:border-white/[0.06] rounded-xl text-xs text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 shadow-xs"
               />
             </div>
           </div>

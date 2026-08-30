@@ -48,7 +48,7 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-zinc-200/80 dark:border-white/[0.08] bg-white/80 dark:bg-[#090b10]/85 backdrop-blur-xl transition-colors">
-      <div className="mx-auto flex h-14 w-full max-w-[1380px] items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-16 w-full max-w-[1720px] items-center justify-between px-4 sm:px-6 lg:px-8 xl:px-10">
         {/* Logo */}
         <div onClick={() => router.push("/")} className="cursor-pointer">
           <Logo size="md" showText={true} />
