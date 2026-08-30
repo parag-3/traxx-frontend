@@ -19,7 +19,6 @@ export function ReminderToast({ selectedDate }: ReminderToastProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
   const shownReminderIds = useRef<Set<string>>(new Set());
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const fetchReminders = useCallback(async () => {
     try {
@@ -32,46 +31,57 @@ export function ReminderToast({ selectedDate }: ReminderToastProps) {
 
         // Find the first unshown pending reminder
         const nextUnshown = pending.find((r) => !shownReminderIds.current.has(r.id));
-        if (nextUnshown && !activeReminder && !isVisible) {
+        if (nextUnshown) {
           shownReminderIds.current.add(nextUnshown.id);
           setActiveReminder(nextUnshown);
-          setIsVisible(true);
-          setIsExiting(false);
-
-          // Auto dismiss after 3 seconds
-          if (timerRef.current) clearTimeout(timerRef.current);
-          timerRef.current = setTimeout(() => {
-            handleDismiss();
-          }, 3000);
         }
       }
     } catch (err) {
       console.error("Failed to fetch reminders", err);
     }
-  }, [selectedDate, activeReminder, isVisible]);
+  }, [selectedDate]);
 
+  // Periodic polling for reminders
   useEffect(() => {
-    // Check reminders on mount and date switch
     fetchReminders();
-
-    // Check periodically every 30 seconds for upcoming reminders
     const interval = setInterval(() => {
       fetchReminders();
     }, 30000);
-
-    return () => {
-      clearInterval(interval);
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
+    return () => clearInterval(interval);
   }, [fetchReminders]);
 
-  const handleDismiss = () => {
+  // Dedicated Auto-Dismiss Timer for 2.5 - 3 seconds
+  useEffect(() => {
+    if (!activeReminder) return;
+
+    setIsVisible(true);
+    setIsExiting(false);
+
+    // Stay for 2.8 seconds, then trigger exit animation
+    const dismissTimer = setTimeout(() => {
+      setIsExiting(true);
+    }, 2800);
+
+    // After exit animation completes (350ms), remove from DOM
+    const removeTimer = setTimeout(() => {
+      setIsVisible(false);
+      setActiveReminder(null);
+      setIsExiting(false);
+    }, 3150);
+
+    return () => {
+      clearTimeout(dismissTimer);
+      clearTimeout(removeTimer);
+    };
+  }, [activeReminder]);
+
+  const handleManualDismiss = () => {
     setIsExiting(true);
     setTimeout(() => {
       setIsVisible(false);
       setActiveReminder(null);
       setIsExiting(false);
-    }, 300); // match transition duration
+    }, 300);
   };
 
   if (!isVisible || !activeReminder) return null;
@@ -111,7 +121,7 @@ export function ReminderToast({ selectedDate }: ReminderToastProps) {
 
           {/* Manual Dismiss */}
           <button
-            onClick={handleDismiss}
+            onClick={handleManualDismiss}
             className="w-6 h-6 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 flex items-center justify-center transition-colors cursor-pointer shrink-0"
             title="Close reminder"
           >
