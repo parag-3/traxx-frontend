@@ -171,51 +171,45 @@ export function HabitCard({
 
   return (
     <SpotlightCard
-      spotlightColor={`${habit.color}28`}
-      className={`group rounded-3xl p-5 border bg-white dark:bg-[#11141d]/90 backdrop-blur-md ${
+      spotlightColor={`${habit.color}20`}
+      className={`group rounded-2xl p-4 border bg-white/80 dark:bg-[#11141d]/80 backdrop-blur-md transition-all duration-150 ${
         todayLog?.isCompleted
-          ? "border-emerald-500/40 dark:border-emerald-500/50 shadow-sm shadow-emerald-500/10 ring-1 ring-emerald-500/20"
+          ? "border-emerald-500/40 dark:border-emerald-500/40 shadow-xs ring-1 ring-emerald-500/20"
           : isRestDay
-          ? "border-zinc-200/50 dark:border-white/[0.05] opacity-75"
-          : "border-zinc-200/80 dark:border-white/[0.08] hover:border-zinc-300 dark:hover:border-white/[0.18] shadow-xs dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.5)]"
+          ? "border-zinc-200/50 dark:border-white/[0.04] opacity-75"
+          : "border-zinc-200/70 dark:border-white/[0.06] hover:border-zinc-300 dark:hover:border-white/[0.12] shadow-xs"
       }`}
     >
       <div>
         {/* Top bar: Category, Frequency, Rest day flag & 3-dot Menu */}
         <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-sm shrink-0 transition-transform group-hover:scale-105"
+              className="w-8 h-8 rounded-xl flex items-center justify-center text-white shadow-xs shrink-0 transition-transform group-hover:scale-105"
               style={{ backgroundColor: habit.color }}
             >
-              <IconComp className="w-5 h-5" />
+              <IconComp className="w-4 h-4" />
             </div>
 
             <div>
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-[11px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-[#181d2c] text-zinc-600 dark:text-zinc-300">
+              <div className="flex items-center gap-1 flex-wrap">
+                <span className="text-[10px] font-semibold tracking-wider uppercase px-1.5 py-0.5 rounded-md bg-zinc-100 dark:bg-[#181d2c] text-zinc-600 dark:text-zinc-300">
                   {habit.category || "General"}
                 </span>
                 {/* Frequency Badge */}
-                <span className="text-[10px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1 bg-zinc-50 dark:bg-[#151926] px-1.5 py-0.5 rounded-md border border-zinc-200/60 dark:border-white/[0.06]">
+                <span className="text-[9px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1 bg-zinc-50 dark:bg-[#151926] px-1.5 py-0.5 rounded-md border border-zinc-200/60 dark:border-white/[0.06]">
                   <Calendar className="w-2.5 h-2.5 text-blue-500" />
                   {freqLabel}
                 </span>
-                {/* Start Date Tag */}
-                {habit.startDate && (
-                  <span className="text-[10px] text-zinc-400 dark:text-zinc-500 hidden sm:inline">
-                    Since {habit.startDate}
-                  </span>
-                )}
                 {/* Rest Day Indicator */}
                 {isRestDay && (
-                  <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded-md">
-                    🌿 Rest Day
+                  <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded-md">
+                    Rest Day
                   </span>
                 )}
               </div>
 
-              <h3 className="font-bold text-base text-zinc-900 dark:text-white mt-1 leading-snug">
+              <h3 className="font-bold text-sm text-zinc-900 dark:text-white mt-0.5 leading-snug">
                 {habit.title}
               </h3>
             </div>
@@ -225,9 +219,9 @@ export function HabitCard({
           <div className="relative">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="w-8 h-8 rounded-xl flex items-center justify-center text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-[#181d2c] transition-colors"
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-[#181d2c] transition-colors"
             >
-              <MoreVertical className="w-4 h-4" />
+              <MoreVertical className="w-3.5 h-3.5" />
             </button>
 
             {menuOpen && (

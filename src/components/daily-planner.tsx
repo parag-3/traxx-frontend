@@ -308,24 +308,24 @@ export function DailyPlanner({
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* 2-Column Responsive Workspace Grid on Desktop */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
         {/* Left Column: Quick Add Bar, Filter Controls & Items Checklist (8 cols) */}
-        <div className="lg:col-span-8 space-y-4">
+        <div className="lg:col-span-8 space-y-3.5">
           {/* Quick Add Bar */}
-          <div className="bg-white dark:bg-[#11141d]/90 backdrop-blur-md border border-zinc-200/80 dark:border-white/[0.08] rounded-3xl p-3 sm:p-4 shadow-xs dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.5)]">
-            <form onSubmit={handleQuickAddTask} className="flex flex-col sm:flex-row items-center gap-2.5">
+          <div className="bg-white/80 dark:bg-[#11141d]/80 backdrop-blur-md border border-zinc-200/70 dark:border-white/[0.06] rounded-2xl p-2.5 sm:p-3 shadow-xs">
+            <form onSubmit={handleQuickAddTask} className="flex flex-col sm:flex-row items-center gap-2">
               <div className="relative flex-1 w-full">
                 <input
                   type="text"
-                  placeholder="Add a task for today (e.g. Finish pitch deck, Buy groceries, Call mechanic)..."
+                  placeholder="Add a task for today (e.g. Finish pitch deck, Buy groceries)..."
                   value={quickTitle}
                   onChange={(e) => setQuickTitle(e.target.value)}
-                  className="w-full pl-3.5 pr-24 py-2.5 bg-zinc-50 dark:bg-[#151926] border border-zinc-200 dark:border-white/[0.08] rounded-2xl text-xs sm:text-sm text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                  className="w-full pl-3 pr-20 py-2 bg-zinc-50/80 dark:bg-[#151926] border border-zinc-200/60 dark:border-white/[0.06] rounded-xl text-xs sm:text-sm text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:ring-1.5 focus:ring-blue-500 transition-all"
                 />
                 {/* Quick Priority Toggle inside input */}
-                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
                   <button
                     type="button"
                     onClick={() =>
@@ -333,7 +333,7 @@ export function DailyPlanner({
                         quickPriority === "LOW" ? "MEDIUM" : quickPriority === "MEDIUM" ? "HIGH" : "LOW"
                       )
                     }
-                    className={`px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase transition-colors ${
+                    className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase transition-colors ${
                       quickPriority === "HIGH"
                         ? "bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400"
                         : quickPriority === "MEDIUM"
@@ -347,33 +347,33 @@ export function DailyPlanner({
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 w-full sm:w-auto">
+              <div className="flex items-center gap-1.5 w-full sm:w-auto">
                 <button
                   type="submit"
                   disabled={!quickTitle.trim() || submittingQuick}
-                  className="flex-1 sm:flex-initial px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white text-xs sm:text-sm font-semibold shadow-md shadow-blue-500/20 hover:scale-[1.02] transition-all flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
+                  className="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white text-xs font-semibold shadow-xs transition-all flex items-center justify-center gap-1 shrink-0 cursor-pointer"
                 >
-                  <Plus className="w-4 h-4" /> Add
+                  <Plus className="w-3.5 h-3.5" /> Add
                 </button>
                 <button
                   type="button"
                   onClick={onOpenCreateTask}
-                  className="px-3.5 py-2.5 rounded-2xl border border-zinc-200 dark:border-white/[0.08] hover:bg-zinc-100 dark:hover:bg-[#181d2a] text-zinc-700 dark:text-zinc-300 text-xs sm:text-sm font-medium transition-colors shrink-0 cursor-pointer"
+                  className="px-3 py-2 rounded-xl border border-zinc-200/70 dark:border-white/[0.06] hover:bg-zinc-100 dark:hover:bg-[#181d2a] text-zinc-600 dark:text-zinc-300 text-xs font-medium transition-colors shrink-0 cursor-pointer"
                   title="Open full task creator with time, category & reminders"
                 >
-                  More Options...
+                  More...
                 </button>
               </div>
             </form>
           </div>
 
           {/* Filter Tabs & Search Bar */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
             {/* Filter Pills */}
-            <div className="flex flex-wrap items-center gap-1.5 p-1 bg-white dark:bg-[#11141d]/90 border border-zinc-200 dark:border-white/[0.08] rounded-2xl shadow-xs">
+            <div className="flex flex-wrap items-center gap-1 p-0.5 bg-white/80 dark:bg-[#11141d]/80 border border-zinc-200/70 dark:border-white/[0.06] rounded-xl shadow-xs">
               <button
                 onClick={() => setFilter("ALL")}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
                   filter === "ALL"
                     ? "bg-zinc-900 dark:bg-white text-white dark:text-black shadow-xs"
                     : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
@@ -383,7 +383,7 @@ export function DailyPlanner({
               </button>
               <button
                 onClick={() => setFilter("HABITS")}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
                   filter === "HABITS"
                     ? "bg-blue-600 text-white shadow-xs"
                     : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
@@ -393,7 +393,7 @@ export function DailyPlanner({
               </button>
               <button
                 onClick={() => setFilter("TASKS")}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
                   filter === "TASKS"
                     ? "bg-purple-600 text-white shadow-xs"
                     : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
@@ -403,7 +403,7 @@ export function DailyPlanner({
               </button>
               <button
                 onClick={() => setFilter("PENDING")}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
                   filter === "PENDING"
                     ? "bg-amber-600 text-white shadow-xs"
                     : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
@@ -413,7 +413,7 @@ export function DailyPlanner({
               </button>
               <button
                 onClick={() => setFilter("COMPLETED")}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
                   filter === "COMPLETED"
                     ? "bg-emerald-600 text-white shadow-xs"
                     : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
@@ -424,14 +424,14 @@ export function DailyPlanner({
             </div>
 
             {/* Search Filter */}
-            <div className="relative w-full sm:w-56">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+            <div className="relative w-full sm:w-48">
+              <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400" />
               <input
                 type="text"
                 placeholder="Search items..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 bg-white dark:bg-[#12151f] border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-xs"
+                className="w-full pl-8 pr-2.5 py-1.5 bg-white/80 dark:bg-[#12151f] border border-zinc-200/70 dark:border-white/[0.06] rounded-xl text-xs text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-xs"
               />
             </div>
           </div>
@@ -461,58 +461,58 @@ export function DailyPlanner({
                   return (
                     <SpotlightCard
                       key={item.id}
-                      spotlightColor={`${habit.color}25`}
-                      className={`group p-4 rounded-3xl border transition-all duration-200 ${
+                      spotlightColor={`${habit.color}20`}
+                      className={`group p-3 sm:p-3.5 rounded-2xl border transition-all duration-150 ${
                         item.isCompleted
-                          ? "bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-200/60 dark:border-emerald-800/40"
-                          : "bg-white dark:bg-[#11141d]/90 backdrop-blur-md border-zinc-200/90 dark:border-white/[0.08] hover:border-zinc-300 dark:hover:border-white/[0.18] shadow-xs dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.5)]"
+                          ? "bg-emerald-50/30 dark:bg-emerald-950/15 border-emerald-200/50 dark:border-emerald-800/30"
+                          : "bg-white/80 dark:bg-[#11141d]/80 backdrop-blur-md border-zinc-200/70 dark:border-white/[0.06] hover:border-zinc-300 dark:hover:border-white/[0.12] shadow-xs"
                       }`}
                     >
-                      <div className="flex items-center justify-between gap-3 w-full">
-                        <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2.5 w-full">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
                           {/* Habit Quick Toggle Checkbox */}
                           <button
                             type="button"
                             onClick={() => handleQuickToggleHabit(habit)}
-                            className={`w-7 h-7 rounded-xl flex items-center justify-center transition-all shrink-0 cursor-pointer ${
+                            className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all shrink-0 cursor-pointer ${
                               item.isCompleted
                                 ? "bg-emerald-600 text-white shadow-xs hover:bg-emerald-700"
                                 : "border-2 border-zinc-300 dark:border-zinc-700 hover:border-blue-500 text-transparent"
                             }`}
                             title={item.isCompleted ? "Click to uncheck/reset" : isNumerical ? "Log numerical progress" : "Toggle habit complete"}
                           >
-                            <Check className="w-4 h-4 stroke-[3]" />
+                            <Check className="w-3.5 h-3.5 stroke-[3]" />
                           </button>
 
                           {/* Habit Icon Badge */}
                           <div
-                            className="w-9 h-9 rounded-xl flex items-center justify-center text-white shrink-0 shadow-xs"
+                            className="w-8 h-8 rounded-xl flex items-center justify-center text-white shrink-0 shadow-xs"
                             style={{ backgroundColor: habit.color }}
                           >
-                            <IconComp className="w-4 h-4" />
+                            <IconComp className="w-3.5 h-3.5" />
                           </div>
 
                           {/* Title & Info */}
                           <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2 flex-wrap">
+                            <div className="flex items-center gap-1.5 flex-wrap">
                               <span
-                                className={`font-semibold text-sm leading-snug truncate ${
+                                className={`font-semibold text-xs sm:text-sm leading-tight truncate ${
                                   item.isCompleted
-                                    ? "text-zinc-600 dark:text-zinc-400 line-through"
+                                    ? "text-zinc-500 dark:text-zinc-500 line-through"
                                     : "text-zinc-900 dark:text-white"
                                 }`}
                               >
                                 {habit.title}
                               </span>
-                              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-[#181d2c] text-zinc-600 dark:text-zinc-300">
+                              <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-zinc-100 dark:bg-[#181d2c] text-zinc-600 dark:text-zinc-300">
                                 {habit.category || "Habit"}
                               </span>
-                              <span className="text-[10px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1 bg-zinc-50 dark:bg-[#151926] px-2 py-0.5 rounded-md border border-zinc-200/50 dark:border-white/[0.06]">
+                              <span className="text-[9px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1 bg-zinc-50 dark:bg-[#151926] px-1.5 py-0.5 rounded-md border border-zinc-200/50 dark:border-white/[0.06]">
                                 <Calendar className="w-2.5 h-2.5 text-blue-500" />
                                 {freqLabel}
                               </span>
                               {habit.reminderEnabled && habit.reminderTime && (
-                                <span className="text-[10px] text-amber-600 dark:text-amber-400 flex items-center gap-1 bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.5 rounded-md">
+                                <span className="text-[9px] text-amber-600 dark:text-amber-400 flex items-center gap-1 bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.5 rounded-md">
                                   <Clock className="w-2.5 h-2.5" />
                                   {habit.reminderTime}
                                 </span>
@@ -520,7 +520,7 @@ export function DailyPlanner({
                             </div>
 
                             {habit.description && (
-                              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 truncate max-w-md">
+                              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5 truncate max-w-md">
                                 {habit.description}
                               </p>
                             )}
@@ -528,18 +528,18 @@ export function DailyPlanner({
                         </div>
 
                         {/* Right Side Habit Controls */}
-                        <div className="flex items-center gap-2.5 shrink-0 ml-3">
-                          <div className="hidden sm:flex items-center gap-1 text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 rounded-xl">
-                            <Flame className="w-3.5 h-3.5 fill-amber-500/20" />
+                        <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                          <div className="hidden sm:flex items-center gap-1 text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-lg">
+                            <Flame className="w-3 h-3 fill-amber-500/20" />
                             <span>{habit.currentStreak}d</span>
                           </div>
 
                           {/* Numerical Controls */}
                           {isNumerical && (
-                            <div className="flex items-center gap-1 bg-zinc-100 dark:bg-[#151926] p-1 rounded-xl border border-zinc-200/60 dark:border-white/[0.06]">
+                            <div className="flex items-center gap-0.5 bg-zinc-100/80 dark:bg-[#151926] p-0.5 rounded-lg border border-zinc-200/60 dark:border-white/[0.06]">
                               <button
                                 onClick={() => handleStepNumeric(habit, -1)}
-                                className="w-6 h-6 rounded-lg bg-white dark:bg-[#1e2334] flex items-center justify-center text-xs font-bold hover:bg-zinc-200 dark:hover:bg-[#252b40] transition-colors"
+                                className="w-5 h-5 rounded-md bg-white dark:bg-[#1e2334] flex items-center justify-center text-[10px] font-bold hover:bg-zinc-200 dark:hover:bg-[#252b40] transition-colors"
                                 title="Decrease"
                               >
                                 -
@@ -549,14 +549,14 @@ export function DailyPlanner({
                                   setNumericalInputHabit(habit);
                                   setNumericalValue(currentVal.toString());
                                 }}
-                                className="px-2 py-0.5 text-xs font-bold text-zinc-800 dark:text-zinc-200 hover:underline"
+                                className="px-1.5 py-0.5 text-[11px] font-bold text-zinc-800 dark:text-zinc-200 hover:underline"
                                 title="Click to enter custom value"
                               >
-                                {currentVal} / {habit.targetValue} {habit.unit}
+                                {currentVal}/{habit.targetValue} {habit.unit}
                               </button>
                               <button
                                 onClick={() => handleStepNumeric(habit, 1)}
-                                className="w-6 h-6 rounded-lg bg-white dark:bg-[#1e2334] flex items-center justify-center text-xs font-bold hover:bg-zinc-200 dark:hover:bg-[#252b40] transition-colors"
+                                className="w-5 h-5 rounded-md bg-white dark:bg-[#1e2334] flex items-center justify-center text-[10px] font-bold hover:bg-zinc-200 dark:hover:bg-[#252b40] transition-colors"
                                 title="Increase"
                               >
                                 +
@@ -568,7 +568,7 @@ export function DailyPlanner({
                           {!isNumerical && habit.statusOptions.length > 0 && (
                             <button
                               onClick={() => handleCycleStatus(habit)}
-                              className="px-2.5 py-1 text-xs font-semibold rounded-xl border transition-colors flex items-center gap-1.5 cursor-pointer"
+                              className="px-2 py-0.5 text-[11px] font-semibold rounded-lg border transition-colors flex items-center gap-1 cursor-pointer"
                               style={{
                                 backgroundColor: hasStatusLog && currentOption ? `${currentOption.color}15` : "#94A3B815",
                                 borderColor: hasStatusLog && currentOption ? `${currentOption.color}40` : "#94A3B830",
@@ -577,7 +577,7 @@ export function DailyPlanner({
                               title="Click to cycle status"
                             >
                               <span
-                                className="w-2 h-2 rounded-full"
+                                className="w-1.5 h-1.5 rounded-full"
                                 style={{ backgroundColor: hasStatusLog && currentOption ? currentOption.color : "#94A3B8" }}
                               />
                               {hasStatusLog && currentOption ? currentOption.label : "Not Logged"}
@@ -587,10 +587,10 @@ export function DailyPlanner({
                           {isLoggedToday && (
                             <button
                               onClick={() => handleClearHabitLog(habit)}
-                              className="p-1.5 text-zinc-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-zinc-100 dark:hover:bg-[#181d2a] rounded-lg transition-colors cursor-pointer"
+                              className="p-1 text-zinc-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-zinc-100 dark:hover:bg-[#181d2a] rounded-lg transition-colors cursor-pointer"
                               title="Clear / Reset today's log"
                             >
-                              <RotateCcw className="w-3.5 h-3.5" />
+                              <RotateCcw className="w-3 h-3" />
                             </button>
                           )}
 
@@ -607,19 +607,19 @@ export function DailyPlanner({
                                   currentMinutes: currentVal,
                                 })
                               }
-                              className="p-1.5 text-zinc-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded-lg transition-colors cursor-pointer"
+                              className="p-1 text-zinc-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded-lg transition-colors cursor-pointer"
                               title="Start Focus Timer for this habit"
                             >
-                              <Timer className="w-4 h-4 text-emerald-500" />
+                              <Timer className="w-3.5 h-3.5 text-emerald-500" />
                             </button>
                           )}
 
                           <button
                             onClick={() => onOpenStats(habit)}
-                            className="p-1.5 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-[#181d2a] rounded-lg transition-colors cursor-pointer"
+                            className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-[#181d2a] rounded-lg transition-colors cursor-pointer"
                             title="View Stats & Trends"
                           >
-                            <Activity className="w-4 h-4" />
+                            <Activity className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </div>
@@ -632,33 +632,33 @@ export function DailyPlanner({
                   return (
                     <SpotlightCard
                       key={item.id}
-                      spotlightColor={task.priority === "HIGH" ? "rgba(239, 68, 68, 0.15)" : "rgba(59, 130, 246, 0.15)"}
-                      className={`group p-4 rounded-3xl border transition-all duration-200 ${
+                      spotlightColor={task.priority === "HIGH" ? "rgba(239, 68, 68, 0.12)" : "rgba(59, 130, 246, 0.12)"}
+                      className={`group p-3 sm:p-3.5 rounded-2xl border transition-all duration-150 ${
                         item.isCompleted
-                          ? "bg-zinc-50/60 dark:bg-[#11141d]/50 border-zinc-200/50 dark:border-white/[0.05] opacity-75"
-                          : "bg-white dark:bg-[#11141d]/90 backdrop-blur-md border-zinc-200/90 dark:border-white/[0.08] hover:border-zinc-300 dark:hover:border-white/[0.18] shadow-xs dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.5)]"
+                          ? "bg-zinc-50/50 dark:bg-[#11141d]/40 border-zinc-200/50 dark:border-white/[0.04] opacity-75"
+                          : "bg-white/80 dark:bg-[#11141d]/80 backdrop-blur-md border-zinc-200/70 dark:border-white/[0.06] hover:border-zinc-300 dark:hover:border-white/[0.12] shadow-xs"
                       }`}
                     >
-                      <div className="flex items-center justify-between gap-3 w-full">
-                        <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2.5 w-full">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
                           <button
                             type="button"
                             onClick={() => handleToggleTask(task)}
-                            className={`w-7 h-7 rounded-xl flex items-center justify-center transition-all shrink-0 cursor-pointer ${
+                            className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all shrink-0 cursor-pointer ${
                               item.isCompleted
                                 ? "bg-blue-600 text-white shadow-xs hover:bg-blue-700"
                                 : "border-2 border-zinc-300 dark:border-zinc-700 hover:border-blue-500 text-transparent"
                             }`}
                           >
-                            <Check className="w-4 h-4 stroke-[3]" />
+                            <Check className="w-3.5 h-3.5 stroke-[3]" />
                           </button>
 
                           <div
-                            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-xs"
+                            className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 shadow-xs"
                             style={{
                               backgroundColor:
                                 task.priority === "HIGH"
-                                  ? "#FEE2E2"
+                                    ? "#FEE2E2"
                                   : task.priority === "LOW"
                                   ? "#D1FAE5"
                                   : "#DBEAFE",
@@ -670,13 +670,13 @@ export function DailyPlanner({
                                   : "#2563EB",
                             }}
                           >
-                            <CheckSquare className="w-4 h-4" />
+                            <CheckSquare className="w-3.5 h-3.5" />
                           </div>
 
                           <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2 flex-wrap">
+                            <div className="flex items-center gap-1.5 flex-wrap">
                               <span
-                                className={`font-semibold text-sm leading-snug truncate ${
+                                className={`font-semibold text-xs sm:text-sm leading-tight truncate ${
                                   item.isCompleted
                                     ? "text-zinc-500 dark:text-zinc-500 line-through"
                                     : "text-zinc-900 dark:text-white"
@@ -686,7 +686,7 @@ export function DailyPlanner({
                               </span>
 
                               <span
-                                className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${
+                                className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md ${
                                   task.priority === "HIGH"
                                     ? "bg-rose-100 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400"
                                     : task.priority === "LOW"
@@ -698,20 +698,20 @@ export function DailyPlanner({
                               </span>
 
                               {task.timeSpent !== undefined && task.timeSpent !== null && task.timeSpent > 0 && (
-                                <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 px-2 py-0.5 rounded-md flex items-center gap-1 border border-blue-200/50 dark:border-blue-900/40">
+                                <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 px-1.5 py-0.5 rounded-md flex items-center gap-1 border border-blue-200/50 dark:border-blue-900/40">
                                   <Timer className="w-2.5 h-2.5" />
                                   {task.timeSpent}m
                                 </span>
                               )}
 
                               {task.category && (
-                                <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-[#181d2c] text-zinc-600 dark:text-zinc-300">
+                                <span className="text-[9px] font-medium px-1.5 py-0.5 rounded-md bg-zinc-100 dark:bg-[#181d2c] text-zinc-600 dark:text-zinc-300">
                                   {task.category}
                                 </span>
                               )}
 
                               {(task.time || task.reminderTime) && (
-                                <span className="text-[10px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1 bg-zinc-50 dark:bg-[#151926] px-1.5 py-0.5 rounded-md border border-zinc-200/50 dark:border-white/[0.06]">
+                                <span className="text-[9px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1 bg-zinc-50 dark:bg-[#151926] px-1.5 py-0.5 rounded-md border border-zinc-200/50 dark:border-white/[0.06]">
                                   <Clock className="w-2.5 h-2.5 text-blue-500" />
                                   {task.time || task.reminderTime}
                                 </span>
@@ -719,14 +719,14 @@ export function DailyPlanner({
                             </div>
 
                             {task.description && (
-                              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 truncate max-w-md">
+                              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5 truncate max-w-md">
                                 {task.description}
                               </p>
                             )}
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-1.5 shrink-0 ml-3">
+                        <div className="flex items-center gap-1 shrink-0 ml-2">
                           {onOpenTimer && (
                             <button
                               type="button"
@@ -740,29 +740,29 @@ export function DailyPlanner({
                                   currentMinutes: task.timeSpent || 0,
                                 })
                               }
-                              className="p-1.5 text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 rounded-lg transition-colors cursor-pointer"
+                              className="p-1 text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 rounded-lg transition-colors cursor-pointer"
                               title="Start Focus Timer for this task"
                             >
-                              <Timer className="w-4 h-4 text-blue-500" />
+                              <Timer className="w-3.5 h-3.5 text-blue-500" />
                             </button>
                           )}
 
                           <button
                             type="button"
                             onClick={() => onEditTask(task)}
-                            className="p-1.5 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-[#181d2a] rounded-lg transition-colors cursor-pointer"
+                            className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-[#181d2a] rounded-lg transition-colors cursor-pointer"
                             title="Edit task"
                           >
-                            <Edit2 className="w-3.5 h-3.5" />
+                            <Edit2 className="w-3 h-3" />
                           </button>
 
                           <button
                             type="button"
                             onClick={() => handleDeleteTask(task.id)}
-                            className="p-1.5 text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition-colors cursor-pointer"
+                            className="p-1 text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition-colors cursor-pointer"
                             title="Delete task"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-3 h-3" />
                           </button>
                         </div>
                       </div>
@@ -775,28 +775,27 @@ export function DailyPlanner({
             </div>
           ) : (
             /* Empty State */
-            <div className="py-16 text-center bg-white dark:bg-[#11141d]/90 border border-dashed border-zinc-200 dark:border-white/[0.08] rounded-3xl p-8 space-y-4 shadow-xs">
-              <div className="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-[#151926] flex items-center justify-center mx-auto text-zinc-400">
-                <CheckSquare className="w-6 h-6" />
+            <div className="py-12 text-center bg-white/60 dark:bg-[#11141d]/60 border border-dashed border-zinc-200 dark:border-white/[0.08] rounded-2xl p-6 space-y-3">
+              <div className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-[#151926] flex items-center justify-center mx-auto text-zinc-400">
+                <CheckCircle2 className="w-5 h-5 text-blue-500" />
               </div>
               <div>
-                <h3 className="font-bold text-base text-zinc-900 dark:text-white">
-                  {summary.totalCount > 0 && summary.completedCount === summary.totalCount
-                    ? "🎉 All Done for the Day!"
-                    : "No items scheduled for this day"}
+                <h3 className="font-bold text-sm text-zinc-900 dark:text-white">
+                  No items in this filter
                 </h3>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 max-w-sm mx-auto">
-                  {summary.totalCount > 0 && summary.completedCount === summary.totalCount
-                    ? "Incredible work! You completed all your habits and tasks for today."
-                    : "Add a habit or custom task to plan your day and keep your momentum going."}
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 max-w-xs mx-auto">
+                  {filter === "ALL"
+                    ? "Add a task or schedule habits to start tracking today's progress."
+                    : `No items currently matching the ${filter.toLowerCase()} filter.`}
                 </p>
               </div>
-              <div className="pt-2">
+              <div className="pt-1">
                 <button
+                  type="button"
                   onClick={onOpenCreateTask}
-                  className="px-5 py-2.5 text-xs font-semibold rounded-2xl bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 hover:scale-[1.02] transition-all inline-flex items-center gap-1.5 cursor-pointer"
+                  className="px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-xs transition-colors inline-flex items-center gap-1 cursor-pointer"
                 >
-                  <Plus className="w-4 h-4" /> Add a Task
+                  <Plus className="w-3.5 h-3.5" /> Add New Task
                 </button>
               </div>
             </div>
@@ -804,27 +803,27 @@ export function DailyPlanner({
         </div>
 
         {/* Right Column: Focus Timer, Today Matrix & Insights (4 cols sticky) */}
-        <div className="lg:col-span-4 space-y-5 lg:sticky lg:top-20">
+        <div className="lg:col-span-4 space-y-3.5 lg:sticky lg:top-20">
           {/* Daily Agenda & Progress Matrix Card */}
           <SpotlightCard
-            spotlightColor="rgba(59, 130, 246, 0.15)"
-            className="bg-white dark:bg-[#11141d]/90 backdrop-blur-md border border-zinc-200/80 dark:border-white/[0.08] rounded-3xl p-5 shadow-xs dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.5)] space-y-5"
+            spotlightColor="rgba(59, 130, 246, 0.12)"
+            className="bg-white/80 dark:bg-[#11141d]/80 backdrop-blur-md border border-zinc-200/70 dark:border-white/[0.06] rounded-2xl p-4 shadow-xs space-y-3.5"
           >
             <div className="flex items-center justify-between">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-cyan-400 bg-blue-50 dark:bg-blue-950/50 px-2 py-0.5 rounded-lg border border-blue-200/50 dark:border-blue-900/40">
+                <span className="text-[9px] font-bold uppercase tracking-wider text-blue-600 dark:text-cyan-400 bg-blue-50 dark:bg-blue-950/50 px-2 py-0.5 rounded-md border border-blue-200/50 dark:border-blue-900/40">
                   {isToday ? "Today's Agenda" : "Day Overview"}
                 </span>
-                <h3 className="text-base font-extrabold text-zinc-900 dark:text-white mt-1">
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-white mt-0.5">
                   Daily Progress
                 </h3>
               </div>
-              <span className="text-xs font-semibold text-zinc-400">{selectedDate}</span>
+              <span className="text-[11px] font-semibold text-zinc-400">{selectedDate}</span>
             </div>
 
-            {/* Circular Gauge + Big Stats */}
-            <div className="flex items-center gap-4 bg-zinc-50 dark:bg-[#151926] p-4 rounded-2xl border border-zinc-200/60 dark:border-white/[0.06]">
-              <div className="relative w-16 h-16 shrink-0 flex items-center justify-center">
+            {/* Circular Gauge + Stats */}
+            <div className="flex items-center gap-3 bg-zinc-50/80 dark:bg-[#151926] p-3 rounded-xl border border-zinc-200/50 dark:border-white/[0.05]">
+              <div className="relative w-12 h-12 shrink-0 flex items-center justify-center">
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
                   <path
                     className="text-zinc-200 dark:text-zinc-800"
@@ -843,16 +842,16 @@ export function DailyPlanner({
                     d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                   />
                 </svg>
-                <span className="absolute text-xs font-black text-zinc-900 dark:text-white">
+                <span className="absolute text-[11px] font-black text-zinc-900 dark:text-white">
                   {summary.completionPercentage}%
                 </span>
               </div>
 
-              <div className="space-y-1">
-                <div className="text-base font-black text-zinc-900 dark:text-white">
+              <div className="space-y-0.5">
+                <div className="text-sm font-bold text-zinc-900 dark:text-white">
                   {summary.completedCount} / {summary.totalCount} Done
                 </div>
-                <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                <div className="text-[11px] text-zinc-500 dark:text-zinc-400">
                   {summary.totalCount === 0
                     ? "Nothing planned yet"
                     : summary.completedCount === summary.totalCount
@@ -863,13 +862,13 @@ export function DailyPlanner({
             </div>
 
             {/* Breakdown Bars */}
-            <div className="grid grid-cols-2 gap-2.5 text-xs">
-              <div className="p-3 bg-zinc-50 dark:bg-[#151926] rounded-2xl border border-zinc-200/60 dark:border-white/[0.06]">
+            <div className="grid grid-cols-2 gap-2 text-[11px]">
+              <div className="p-2.5 bg-zinc-50/80 dark:bg-[#151926] rounded-xl border border-zinc-200/50 dark:border-white/[0.05]">
                 <div className="flex items-center justify-between font-semibold text-zinc-500 dark:text-zinc-400">
                   <span>Habits</span>
                   <span className="text-blue-500 font-bold">{summary.habitsCompleted}/{summary.habitsTotal}</span>
                 </div>
-                <div className="w-full bg-zinc-200 dark:bg-[#1e2334] h-1.5 rounded-full mt-2 overflow-hidden">
+                <div className="w-full bg-zinc-200 dark:bg-[#1e2334] h-1 rounded-full mt-1.5 overflow-hidden">
                   <div
                     className="bg-blue-500 h-full transition-all"
                     style={{
@@ -879,12 +878,12 @@ export function DailyPlanner({
                 </div>
               </div>
 
-              <div className="p-3 bg-zinc-50 dark:bg-[#151926] rounded-2xl border border-zinc-200/60 dark:border-white/[0.06]">
+              <div className="p-2.5 bg-zinc-50/80 dark:bg-[#151926] rounded-xl border border-zinc-200/50 dark:border-white/[0.05]">
                 <div className="flex items-center justify-between font-semibold text-zinc-500 dark:text-zinc-400">
                   <span>Tasks</span>
                   <span className="text-purple-500 font-bold">{summary.tasksCompleted}/{summary.tasksTotal}</span>
                 </div>
-                <div className="w-full bg-zinc-200 dark:bg-[#1e2334] h-1.5 rounded-full mt-2 overflow-hidden">
+                <div className="w-full bg-zinc-200 dark:bg-[#1e2334] h-1 rounded-full mt-1.5 overflow-hidden">
                   <div
                     className="bg-purple-500 h-full transition-all"
                     style={{
@@ -899,38 +898,38 @@ export function DailyPlanner({
           {/* ⚡ Quick Focus Timer Launcher */}
           {onOpenTimer && (
             <SpotlightCard
-              spotlightColor="rgba(16, 185, 129, 0.15)"
-              className="bg-white dark:bg-[#11141d]/90 backdrop-blur-md border border-zinc-200/80 dark:border-white/[0.08] rounded-3xl p-5 shadow-xs dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.5)] space-y-4"
+              spotlightColor="rgba(16, 185, 129, 0.12)"
+              className="bg-white/80 dark:bg-[#11141d]/80 backdrop-blur-md border border-zinc-200/70 dark:border-white/[0.06] rounded-2xl p-4 shadow-xs space-y-3"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
-                    <Timer className="w-4 h-4" />
+                  <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+                    <Timer className="w-3.5 h-3.5" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
+                    <h3 className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white">
                       Focus Countdown
                     </h3>
-                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                    <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
                       Deep work session & timer
                     </p>
                   </div>
                 </div>
-                <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-lg">
+                <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md">
                   {sidebarFocusMinutes}m
                 </span>
               </div>
 
               {/* Preset buttons */}
-              <div className="grid grid-cols-5 gap-1.5">
+              <div className="grid grid-cols-5 gap-1">
                 {[15, 25, 30, 45, 60].map((mins) => (
                   <button
                     key={mins}
                     onClick={() => setSidebarFocusMinutes(mins)}
-                    className={`py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                    className={`py-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer ${
                       sidebarFocusMinutes === mins
                         ? "bg-emerald-600 text-white shadow-xs"
-                        : "bg-zinc-100 dark:bg-[#151926] text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-[#1e2334]"
+                        : "bg-zinc-100/80 dark:bg-[#151926] text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-[#1e2334]"
                     }`}
                   >
                     {mins}m
@@ -949,21 +948,21 @@ export function DailyPlanner({
                     currentMinutes: 0,
                   })
                 }
-                className="w-full py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white text-xs font-bold shadow-md shadow-emerald-500/20 hover:scale-[1.01] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white text-xs font-semibold shadow-xs hover:scale-[1.01] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
               >
-                <Play className="w-3.5 h-3.5 fill-current" /> Start {sidebarFocusMinutes}-Min Timer
+                <Play className="w-3 h-3 fill-current" /> Start {sidebarFocusMinutes}-Min Timer
               </button>
             </SpotlightCard>
           )}
 
           {/* Motivation & Streaks Insight Card */}
-          <div className="p-4 rounded-3xl bg-gradient-to-tr from-amber-500/10 via-emerald-500/5 to-cyan-500/10 border border-amber-500/20 dark:border-white/[0.06] text-xs space-y-2">
-            <div className="flex items-center gap-2 font-bold text-amber-600 dark:text-amber-400">
-              <Flame className="w-4 h-4 fill-amber-500/20" />
+          <div className="p-3 rounded-2xl bg-gradient-to-tr from-amber-500/10 via-emerald-500/5 to-cyan-500/10 border border-amber-500/20 dark:border-white/[0.06] text-xs space-y-1.5">
+            <div className="flex items-center gap-1.5 font-bold text-amber-600 dark:text-amber-400 text-[11px]">
+              <Flame className="w-3.5 h-3.5 fill-amber-500/20" />
               <span>Momentum Tip</span>
             </div>
             <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
-              Small consistent actions build massive compounding momentum over time. Complete high-priority habits first thing in your day!
+              Small consistent actions build compounding momentum. Complete high-priority habits first!
             </p>
           </div>
         </div>

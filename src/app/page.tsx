@@ -161,7 +161,7 @@ export default function Home() {
 
   return (
     <div className="min-h-[calc(100vh-4rem)] font-sans text-zinc-900 dark:text-zinc-100">
-      <main className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 py-7 space-y-6">
+      <main className="w-full max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
         {/* Top App Header: Navigation Tabs & Create Buttons */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           {/* Main View Mode Navigation Tabs */}
