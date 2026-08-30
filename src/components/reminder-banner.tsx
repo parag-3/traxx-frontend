@@ -1,143 +1,145 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { ReminderItem } from "@/types/habit";
-import { Bell, BellRing, Clock, Check, ChevronDown, ChevronUp, Sparkles, X } from "lucide-react";
+import { BellRing, Clock, X } from "lucide-react";
 import { API_BASE_URL } from "@/lib/api";
 
-interface ReminderBannerProps {
+interface ReminderToastProps {
   selectedDate: string;
   onRefresh?: () => void;
 }
 
-export function ReminderBanner({ selectedDate, onRefresh }: ReminderBannerProps) {
-  const [reminders, setReminders] = useState<ReminderItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [expanded, setExpanded] = useState(false);
-  const [browserNotificationsAllowed, setBrowserNotificationsAllowed] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
+export function ReminderBanner({ selectedDate }: ReminderToastProps) {
+  return <ReminderToast selectedDate={selectedDate} />;
+}
+
+export function ReminderToast({ selectedDate }: ReminderToastProps) {
+  const [activeReminder, setActiveReminder] = useState<ReminderItem | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
+  const shownReminderIds = useRef<Set<string>>(new Set());
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const fetchReminders = useCallback(async () => {
     try {
-      setLoading(true);
       const res = await fetch(`${API_BASE_URL}/api/reminders/today?date=${selectedDate}`, {
         credentials: "include",
       });
       if (res.ok) {
-        const data = await res.json();
-        setReminders(data);
+        const data: ReminderItem[] = await res.json();
+        const pending = data.filter((r) => !r.isCompleted);
+
+        // Find the first unshown pending reminder
+        const nextUnshown = pending.find((r) => !shownReminderIds.current.has(r.id));
+        if (nextUnshown && !activeReminder && !isVisible) {
+          shownReminderIds.current.add(nextUnshown.id);
+          setActiveReminder(nextUnshown);
+          setIsVisible(true);
+          setIsExiting(false);
+
+          // Auto dismiss after 3 seconds
+          if (timerRef.current) clearTimeout(timerRef.current);
+          timerRef.current = setTimeout(() => {
+            handleDismiss();
+          }, 3000);
+        }
       }
     } catch (err) {
       console.error("Failed to fetch reminders", err);
-    } finally {
-      setLoading(false);
     }
-  }, [selectedDate]);
+  }, [selectedDate, activeReminder, isVisible]);
 
   useEffect(() => {
+    // Check reminders on mount and date switch
     fetchReminders();
-    if (typeof window !== "undefined" && "Notification" in window) {
-      setBrowserNotificationsAllowed(Notification.permission === "granted");
-    }
+
+    // Check periodically every 30 seconds for upcoming reminders
+    const interval = setInterval(() => {
+      fetchReminders();
+    }, 30000);
+
+    return () => {
+      clearInterval(interval);
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
   }, [fetchReminders]);
 
-  const requestNotificationPermission = async () => {
-    if (typeof window !== "undefined" && "Notification" in window) {
-      const permission = await Notification.requestPermission();
-      setBrowserNotificationsAllowed(permission === "granted");
-    }
+  const handleDismiss = () => {
+    setIsExiting(true);
+    setTimeout(() => {
+      setIsVisible(false);
+      setActiveReminder(null);
+      setIsExiting(false);
+    }, 300); // match transition duration
   };
 
-  if (dismissed || reminders.length === 0) return null;
-
-  const pendingReminders = reminders.filter((r) => !r.isCompleted);
-  const nextReminder = pendingReminders[0] || reminders[0];
+  if (!isVisible || !activeReminder) return null;
 
   return (
-    <div className="bg-amber-500/10 dark:bg-amber-500/5 border border-amber-500/30 dark:border-amber-500/20 rounded-2xl p-3.5 shadow-sm transition-all duration-200">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5 min-w-0 flex-1">
-          <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
-            <BellRing className="w-4 h-4 animate-bounce" />
-          </div>
+    <div className="fixed top-20 right-4 sm:right-6 z-50 pointer-events-auto max-w-sm w-full">
+      <div
+        className={`relative overflow-hidden rounded-2xl p-4 bg-[#0f121a]/95 backdrop-blur-xl border border-amber-500/40 text-white shadow-2xl shadow-amber-500/10 transition-all duration-300 ${
+          isExiting
+            ? "opacity-0 translate-x-12 scale-95"
+            : "animate-in slide-in-from-right-8 duration-300 fade-in scale-100"
+        }`}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            {/* Glowing Bell Icon */}
+            <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-400 flex items-center justify-center shrink-0 shadow-xs">
+              <BellRing className="w-4 h-4 animate-bounce" />
+            </div>
 
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-bold text-amber-900 dark:text-amber-300">
-                Today&apos;s Reminders ({pendingReminders.length} pending)
-              </span>
-              {nextReminder && (
-                <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-1">
-                  <Clock className="w-3 h-3 text-amber-500" />
-                  <span className="font-bold">{nextReminder.reminderTime}</span>: {nextReminder.title}
+            {/* Content */}
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5 text-[10px] font-bold text-amber-400 uppercase tracking-wider">
+                <Clock className="w-3 h-3 text-amber-400" />
+                <span>Reminder • {activeReminder.reminderTime}</span>
+              </div>
+              <h4 className="text-sm font-extrabold text-white truncate mt-0.5">
+                {activeReminder.title}
+              </h4>
+              {activeReminder.category && (
+                <span className="text-[10px] text-zinc-400 font-medium">
+                  {activeReminder.category} ({activeReminder.sourceType.toLowerCase()})
                 </span>
               )}
             </div>
           </div>
-        </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          {!browserNotificationsAllowed && (
-            <button
-              onClick={requestNotificationPermission}
-              className="hidden sm:inline-flex text-[11px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-200/60 dark:bg-amber-900/40 hover:bg-amber-200 px-2.5 py-1 rounded-lg transition-colors"
-            >
-              🔔 Enable Browser Alerts
-            </button>
-          )}
-
-          {reminders.length > 1 && (
-            <button
-              onClick={() => setExpanded(!expanded)}
-              className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white px-2 py-1 rounded-lg flex items-center gap-1 hover:bg-amber-500/10 transition-colors"
-            >
-              {expanded ? "Hide" : `View All (${reminders.length})`}
-              {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-            </button>
-          )}
-
+          {/* Manual Dismiss */}
           <button
-            onClick={() => setDismissed(true)}
-            className="w-6 h-6 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-amber-500/10 flex items-center justify-center transition-colors"
-            title="Dismiss banner"
+            onClick={handleDismiss}
+            className="w-6 h-6 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 flex items-center justify-center transition-colors cursor-pointer shrink-0"
+            title="Close reminder"
           >
             <X className="w-3.5 h-3.5" />
           </button>
         </div>
+
+        {/* 3-Second Countdown Progress Line */}
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/[0.05] overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-amber-500 to-amber-300"
+            style={{
+              animation: "reminderCountdown 3s linear forwards",
+            }}
+          />
+        </div>
       </div>
 
-      {/* Expanded List of Reminders */}
-      {expanded && (
-        <div className="mt-3 pt-3 border-t border-amber-500/20 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-          {reminders.map((r) => (
-            <div
-              key={r.id}
-              className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 ${
-                r.isCompleted
-                  ? "bg-zinc-100/60 dark:bg-zinc-900/40 border-zinc-200 dark:border-zinc-800 text-zinc-400"
-                  : "bg-white dark:bg-zinc-950 border-amber-500/30 text-zinc-900 dark:text-white shadow-2xs"
-              }`}
-            >
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5">
-                  <Clock className="w-3 h-3 text-amber-500 shrink-0" />
-                  <span className="text-xs font-bold">{r.reminderTime}</span>
-                </div>
-                <div
-                  className={`text-xs truncate font-medium mt-0.5 ${
-                    r.isCompleted ? "line-through text-zinc-400" : ""
-                  }`}
-                >
-                  {r.title}
-                </div>
-              </div>
-              <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-900 text-zinc-500">
-                {r.sourceType}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
+      <style jsx>{`
+        @keyframes reminderCountdown {
+          from {
+            width: 100%;
+          }
+          to {
+            width: 0%;
+          }
+        }
+      `}</style>
     </div>
   );
 }
