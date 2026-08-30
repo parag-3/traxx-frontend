@@ -1,7 +1,18 @@
 "use client";
 
 import React, { useState, useMemo, useRef, useCallback } from "react";
-import { TrendingUp, Award, Flame, Calendar, Clock, Target } from "lucide-react";
+import {
+  TrendingUp,
+  BarChart2,
+  GitCommit,
+  CircleDot,
+  Award,
+  Flame,
+  Calendar,
+  Clock,
+  Target,
+  Layers,
+} from "lucide-react";
 
 export interface TimelineDataPoint {
   date: string;
@@ -9,6 +20,8 @@ export interface TimelineDataPoint {
   target?: number;
   isCompleted?: boolean;
 }
+
+export type ChartType = "LINE" | "BAR" | "STEP" | "SCATTER";
 
 interface TrendLineGraphProps {
   data: TimelineDataPoint[];
@@ -19,6 +32,8 @@ interface TrendLineGraphProps {
   subtitle?: string;
   height?: number;
   showTimeframes?: boolean;
+  showChartTypeSelector?: boolean;
+  defaultChartType?: ChartType;
   emptyMessage?: string;
 }
 
@@ -29,11 +44,14 @@ export function TrendLineGraph({
   targetValue = 0,
   title,
   subtitle,
-  height = 240,
+  height = 250,
   showTimeframes = true,
+  showChartTypeSelector = true,
+  defaultChartType = "LINE",
   emptyMessage = "No logs recorded in this timeframe yet",
 }: TrendLineGraphProps) {
   const [timeframe, setTimeframe] = useState<"7D" | "14D" | "30D" | "90D" | "ALL">("14D");
+  const [chartType, setChartType] = useState<ChartType>(defaultChartType);
   const [hoveredPoint, setHoveredPoint] = useState<{
     x: number;
     y: number;
@@ -50,7 +68,7 @@ export function TrendLineGraph({
 
     const daysCount = timeframe === "7D" ? 7 : timeframe === "14D" ? 14 : timeframe === "30D" ? 30 : 90;
 
-    // Generate continuous days leading up to today so the graph doesn't jump
+    // Generate continuous days leading up to today
     const result: TimelineDataPoint[] = [];
     const today = new Date();
     const dataMap = new Map<string, TimelineDataPoint>();
@@ -98,7 +116,7 @@ export function TrendLineGraph({
   // SVG Dimensions & Padding
   const width = 800; // virtual canvas width
   const padLeft = 45;
-  const padRight = 20;
+  const padRight = 25;
   const padTop = 30;
   const padBottom = 35;
   const chartW = width - padLeft - padRight;
@@ -121,36 +139,34 @@ export function TrendLineGraph({
     [filteredData.length, padLeft, chartW]
   );
 
-  // Generate smooth cubic Bezier spline path
-  const { linePath, areaPath, points } = useMemo(() => {
-    if (filteredData.length === 0) return { linePath: "", areaPath: "", points: [] };
-
-    const pts = filteredData.map((d, i) => ({
+  // Data Points
+  const points = useMemo(() => {
+    return filteredData.map((d, i) => ({
       x: getX(i),
       y: getY(d.value),
       data: d,
       index: i,
     }));
+  }, [filteredData, getX, getY]);
 
-    if (pts.length === 1) {
-      const p = pts[0]!;
+  // 1. Spline Bezier Paths (Line Chart)
+  const { linePath, areaPath } = useMemo(() => {
+    if (points.length === 0) return { linePath: "", areaPath: "" };
+    if (points.length === 1) {
+      const p = points[0]!;
       return {
         linePath: `M ${p.x} ${p.y}`,
         areaPath: `M ${p.x} ${p.y} L ${p.x} ${padTop + chartH} Z`,
-        points: pts,
       };
     }
 
-    // Cubic Bezier curve algorithm
-    let dStr = `M ${pts[0]!.x} ${pts[0]!.y}`;
+    let dStr = `M ${points[0]!.x} ${points[0]!.y}`;
+    for (let i = 0; i < points.length - 1; i++) {
+      const p0 = i > 0 ? points[i - 1]! : points[i]!;
+      const p1 = points[i]!;
+      const p2 = points[i + 1]!;
+      const p3 = i < points.length - 2 ? points[i + 2]! : p2;
 
-    for (let i = 0; i < pts.length - 1; i++) {
-      const p0 = i > 0 ? pts[i - 1]! : pts[i]!;
-      const p1 = pts[i]!;
-      const p2 = pts[i + 1]!;
-      const p3 = i < pts.length - 2 ? pts[i + 2]! : p2;
-
-      // Control points
       const cp1x = p1.x + (p2.x - p0.x) / 6;
       const cp1y = p1.y + (p2.y - p0.y) / 6;
       const cp2x = p2.x - (p3.x - p1.x) / 6;
@@ -159,17 +175,40 @@ export function TrendLineGraph({
       dStr += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
     }
 
-    const firstPt = pts[0]!;
-    const lastPt = pts[pts.length - 1]!;
+    const firstPt = points[0]!;
+    const lastPt = points[points.length - 1]!;
     const baseLineY = padTop + chartH;
     const aStr = `${dStr} L ${lastPt.x} ${baseLineY} L ${firstPt.x} ${baseLineY} Z`;
 
-    return {
-      linePath: dStr,
-      areaPath: aStr,
-      points: pts,
-    };
-  }, [filteredData, getX, getY, padTop, chartH]);
+    return { linePath: dStr, areaPath: aStr };
+  }, [points, padTop, chartH]);
+
+  // 2. Step Staircase Path (Step Chart)
+  const { stepLinePath, stepAreaPath } = useMemo(() => {
+    if (points.length === 0) return { stepLinePath: "", stepAreaPath: "" };
+    let dStr = `M ${points[0]!.x} ${points[0]!.y}`;
+
+    for (let i = 0; i < points.length - 1; i++) {
+      const p1 = points[i]!;
+      const p2 = points[i + 1]!;
+      const midX = (p1.x + p2.x) / 2;
+      dStr += ` H ${midX} V ${p2.y} H ${p2.x}`;
+    }
+
+    const firstPt = points[0]!;
+    const lastPt = points[points.length - 1]!;
+    const baseLineY = padTop + chartH;
+    const aStr = `${dStr} L ${lastPt.x} ${baseLineY} L ${firstPt.x} ${baseLineY} Z`;
+
+    return { stepLinePath: dStr, stepAreaPath: aStr };
+  }, [points, padTop, chartH]);
+
+  // 3. Bar Column Dimensions (Bar Chart)
+  const barWidth = useMemo(() => {
+    if (points.length <= 1) return 30;
+    const gap = chartW / (points.length - 1);
+    return Math.max(Math.min(gap * 0.65, 36), 6);
+  }, [points.length, chartW]);
 
   // Target Baseline Y Coordinate
   const targetY = targetValue > 0 ? getY(targetValue) : null;
@@ -211,32 +250,86 @@ export function TrendLineGraph({
     return `${parts[1]}/${parts[2]}`;
   };
 
-  // Generate unique gradient IDs based on color
+  // Gradient ID
   const gradientId = useMemo(() => `trend-grad-${Math.random().toString(36).substr(2, 9)}`, []);
 
   return (
     <div ref={containerRef} className="space-y-4">
-      {/* Top Header & Timeframe Selector */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      {/* Top Header Controls: Title, Chart Type Selector & Timeframe */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 flex-wrap">
         <div>
           {title && <h4 className="text-sm font-bold text-zinc-900 dark:text-white">{title}</h4>}
           {subtitle && <p className="text-xs text-zinc-500 dark:text-zinc-400">{subtitle}</p>}
         </div>
 
-        <div className="flex items-center gap-3">
-          {/* Quick Stat Highlights */}
-          <div className="flex items-center gap-3 text-xs">
-            <span className="text-zinc-500 dark:text-zinc-400">
+        <div className="flex items-center gap-2.5 flex-wrap">
+          {/* Quick Metrics */}
+          <div className="flex items-center gap-2.5 text-xs text-zinc-500 dark:text-zinc-400 mr-1">
+            <span>
               Avg: <strong className="text-zinc-900 dark:text-white font-bold">{avgValue} {unit}</strong>
             </span>
-            <span className="text-zinc-500 dark:text-zinc-400">
+            <span>
               Peak: <strong className="text-zinc-900 dark:text-white font-bold">{maxValue} {unit}</strong>
             </span>
           </div>
 
+          {/* Chart Type Selector Toggle */}
+          {showChartTypeSelector && (
+            <div className="flex items-center gap-1 bg-zinc-100 dark:bg-white/[0.04] p-0.5 rounded-xl border border-zinc-200/60 dark:border-white/[0.06]">
+              <button
+                type="button"
+                onClick={() => setChartType("LINE")}
+                title="Spline Line Chart"
+                className={`p-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  chartType === "LINE"
+                    ? "bg-white dark:bg-[#1c2234] text-emerald-500 shadow-xs"
+                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                }`}
+              >
+                <TrendingUp className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setChartType("BAR")}
+                title="Column Bar Chart"
+                className={`p-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  chartType === "BAR"
+                    ? "bg-white dark:bg-[#1c2234] text-blue-500 shadow-xs"
+                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                }`}
+              >
+                <BarChart2 className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setChartType("STEP")}
+                title="Staircase Step Chart"
+                className={`p-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  chartType === "STEP"
+                    ? "bg-white dark:bg-[#1c2234] text-purple-500 shadow-xs"
+                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                }`}
+              >
+                <GitCommit className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setChartType("SCATTER")}
+                title="Scatter Point Bubble Chart"
+                className={`p-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  chartType === "SCATTER"
+                    ? "bg-white dark:bg-[#1c2234] text-amber-500 shadow-xs"
+                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                }`}
+              >
+                <CircleDot className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+
           {/* Timeframe Filter Buttons */}
           {showTimeframes && (
-            <div className="flex items-center gap-1 bg-zinc-100 dark:bg-white/[0.04] p-0.5 rounded-xl border border-zinc-200/60 dark:border-white/[0.06]">
+            <div className="flex items-center gap-0.5 bg-zinc-100 dark:bg-white/[0.04] p-0.5 rounded-xl border border-zinc-200/60 dark:border-white/[0.06]">
               {(["7D", "14D", "30D", "90D", "ALL"] as const).map((tf) => (
                 <button
                   key={tf}
@@ -277,6 +370,16 @@ export function TrendLineGraph({
                 <stop offset="0%" stopColor={color} stopOpacity="0.35" />
                 <stop offset="70%" stopColor={color} stopOpacity="0.05" />
                 <stop offset="100%" stopColor={color} stopOpacity="0.0" />
+              </linearGradient>
+
+              <linearGradient id={`${gradientId}-bar`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={color} stopOpacity="0.9" />
+                <stop offset="100%" stopColor={color} stopOpacity="0.4" />
+              </linearGradient>
+
+              <linearGradient id={`${gradientId}-target-bar`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#10B981" stopOpacity="0.95" />
+                <stop offset="100%" stopColor="#059669" stopOpacity="0.5" />
               </linearGradient>
             </defs>
 
@@ -319,11 +422,11 @@ export function TrendLineGraph({
                   stroke="#F59E0B"
                   strokeDasharray="4,4"
                   strokeWidth="1.5"
-                  opacity="0.8"
+                  opacity="0.85"
                 />
                 <text
                   x={width - padRight}
-                  y={targetY - 5}
+                  y={targetY - 6}
                   textAnchor="end"
                   fill="#F59E0B"
                   className="text-[10px] font-bold"
@@ -333,38 +436,128 @@ export function TrendLineGraph({
               </g>
             )}
 
-            {/* Area Fill Gradient Under Curve */}
-            {areaPath && <path d={areaPath} fill={`url(#${gradientId})`} />}
+            {/* RENDER MODE 1: BAR COLUMNS */}
+            {chartType === "BAR" && (
+              <g>
+                {points.map((p, i) => {
+                  const isHovered = hoveredPoint?.index === i;
+                  const isPassed = p.data.isCompleted || (targetValue > 0 && p.data.value >= targetValue);
+                  const barH = Math.max(padTop + chartH - p.y, p.data.value > 0 ? 4 : 1);
+                  const barX = p.x - barWidth / 2;
+                  const barY = padTop + chartH - barH;
 
-            {/* Main Spline Curve Stroke */}
-            {linePath && (
-              <path
-                d={linePath}
-                fill="none"
-                stroke={color}
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
+                  return (
+                    <g key={i}>
+                      {/* Bar Column Rect with Rounded Top */}
+                      <rect
+                        x={barX}
+                        y={barY}
+                        width={barWidth}
+                        height={barH}
+                        rx={barWidth > 12 ? 4 : 2}
+                        fill={isPassed ? `url(#${gradientId}-target-bar)` : `url(#${gradientId}-bar)`}
+                        stroke={isHovered ? "#FFFFFF" : "transparent"}
+                        strokeWidth="1.5"
+                        className="transition-all duration-150"
+                        opacity={isHovered ? 1 : 0.85}
+                      />
+                    </g>
+                  );
+                })}
+              </g>
             )}
 
-            {/* Data Points (shown on hover or when few points) */}
-            {points.map((p, i) => {
-              const isSelected = hoveredPoint?.index === i;
-              const isPassed = p.data.isCompleted || (targetValue > 0 && p.data.value >= targetValue);
-              return (
-                <circle
-                  key={i}
-                  cx={p.x}
-                  cy={p.y}
-                  r={isSelected ? 6 : p.data.value > 0 ? 3 : 2}
-                  fill={isSelected ? "#FFFFFF" : isPassed ? "#10B981" : color}
-                  stroke={isSelected ? color : "transparent"}
-                  strokeWidth="2.5"
-                  className="transition-all duration-150"
-                />
-              );
-            })}
+            {/* RENDER MODE 2: STEP STAIRCASE */}
+            {chartType === "STEP" && (
+              <g>
+                {stepAreaPath && <path d={stepAreaPath} fill={`url(#${gradientId})`} />}
+                {stepLinePath && (
+                  <path
+                    d={stepLinePath}
+                    fill="none"
+                    stroke={color}
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                )}
+              </g>
+            )}
+
+            {/* RENDER MODE 3: SPLINE LINE CURVE */}
+            {chartType === "LINE" && (
+              <g>
+                {areaPath && <path d={areaPath} fill={`url(#${gradientId})`} />}
+                {linePath && (
+                  <path
+                    d={linePath}
+                    fill="none"
+                    stroke={color}
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                )}
+              </g>
+            )}
+
+            {/* RENDER MODE 4: SCATTER BUBBLE POINTS */}
+            {chartType === "SCATTER" && (
+              <g>
+                {points.map((p, i) => {
+                  const isHovered = hoveredPoint?.index === i;
+                  const isPassed = p.data.isCompleted || (targetValue > 0 && p.data.value >= targetValue);
+                  // Dynamic bubble radius based on value magnitude
+                  const radius = p.data.value > 0 ? Math.min(Math.max((p.data.value / (maxValue || 1)) * 14, 4), 18) : 2;
+
+                  return (
+                    <g key={i}>
+                      {/* Luminous Glow Halo */}
+                      {p.data.value > 0 && (
+                        <circle
+                          cx={p.x}
+                          cy={p.y}
+                          r={radius * 1.5}
+                          fill={isPassed ? "#10B981" : color}
+                          opacity="0.15"
+                        />
+                      )}
+                      <circle
+                        cx={p.x}
+                        cy={p.y}
+                        r={isHovered ? radius + 3 : radius}
+                        fill={isPassed ? "#10B981" : color}
+                        stroke={isHovered ? "#FFFFFF" : `${color}40`}
+                        strokeWidth="2"
+                        className="transition-all duration-150"
+                      />
+                    </g>
+                  );
+                })}
+              </g>
+            )}
+
+            {/* Anchor Points on Line and Step charts */}
+            {(chartType === "LINE" || chartType === "STEP") && (
+              <g>
+                {points.map((p, i) => {
+                  const isSelected = hoveredPoint?.index === i;
+                  const isPassed = p.data.isCompleted || (targetValue > 0 && p.data.value >= targetValue);
+                  return (
+                    <circle
+                      key={i}
+                      cx={p.x}
+                      cy={p.y}
+                      r={isSelected ? 6 : p.data.value > 0 ? 3 : 1.5}
+                      fill={isSelected ? "#FFFFFF" : isPassed ? "#10B981" : color}
+                      stroke={isSelected ? color : "transparent"}
+                      strokeWidth="2.5"
+                      className="transition-all duration-150"
+                    />
+                  );
+                })}
+              </g>
+            )}
 
             {/* Vertical Crosshair Line on Hover */}
             {hoveredPoint && (
@@ -374,7 +567,7 @@ export function TrendLineGraph({
                 x2={hoveredPoint.x}
                 y2={padTop + chartH}
                 stroke="currentColor"
-                className="text-zinc-400/80 dark:text-white/30"
+                className="text-zinc-400/80 dark:text-white/40"
                 strokeDasharray="2,2"
                 strokeWidth="1.5"
               />
@@ -382,7 +575,6 @@ export function TrendLineGraph({
 
             {/* X-Axis Date Labels */}
             {points.map((p, i) => {
-              // Only show every Nth label to prevent overlapping
               const step = points.length > 20 ? 5 : points.length > 10 ? 2 : 1;
               if (i % step !== 0 && i !== points.length - 1) return null;
               return (

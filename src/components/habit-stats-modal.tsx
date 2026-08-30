@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { Skeleton, SkeletonStatsModal } from "./skeleton";
 import { TrendLineGraph } from "./trend-line-graph";
+import { WeekdayDistributionChart } from "./weekday-distribution-chart";
 
 interface HabitStatsModalProps {
   habit: Habit | null;
@@ -341,7 +342,7 @@ export function HabitStatsModal({ habit, isOpen, onClose, onHabitUpdated }: Habi
                   </div>
                 </div>
 
-                {/* Interactive Spline Line Graph */}
+                {/* Interactive Multi-Format Graph */}
                 <div className="pt-2">
                   <TrendLineGraph
                     data={stats.timeStats.dailyTimeline || []}
@@ -349,9 +350,22 @@ export function HabitStatsModal({ habit, isOpen, onClose, onHabitUpdated }: Habi
                     color={habit.color || "#10B981"}
                     targetValue={stats.timeStats.targetMinutes}
                     title="Focus Minutes Progression Trend"
-                    subtitle="Interactive daily focus time curve vs goal threshold"
+                    subtitle="Switch between Spline Line, Column Bars, Step Staircase, and Scatter Bubbles"
                     height={210}
                     showTimeframes={true}
+                    showChartTypeSelector={true}
+                    defaultChartType="LINE"
+                  />
+                </div>
+
+                {/* Day-of-Week Focus Distribution */}
+                <div className="pt-3 border-t border-zinc-200/60 dark:border-zinc-800/60">
+                  <WeekdayDistributionChart
+                    timeline={stats.timeStats.dailyTimeline || []}
+                    unit="mins"
+                    color={habit.color || "#10B981"}
+                    title="Focus Time by Day of Week"
+                    subtitle="Distribution of focus sessions across Monday through Sunday"
                   />
                 </div>
               </div>
@@ -393,7 +407,7 @@ export function HabitStatsModal({ habit, isOpen, onClose, onHabitUpdated }: Habi
                   </div>
                 </div>
 
-                {/* Interactive Spline Line Graph */}
+                {/* Interactive Multi-Format Graph */}
                 <div className="pt-2">
                   <TrendLineGraph
                     data={stats.numericalStats.dailyTimeline || []}
@@ -401,9 +415,22 @@ export function HabitStatsModal({ habit, isOpen, onClose, onHabitUpdated }: Habi
                     color={habit.color || "#3B82F6"}
                     targetValue={stats.numericalStats.targetValue || 0}
                     title="Output Progression Trend"
-                    subtitle="Interactive daily quantity logged vs target goal"
+                    subtitle="Switch between Spline Line, Column Bars, Step Staircase, and Scatter Bubbles"
                     height={210}
                     showTimeframes={true}
+                    showChartTypeSelector={true}
+                    defaultChartType="BAR"
+                  />
+                </div>
+
+                {/* Day-of-Week Output Distribution */}
+                <div className="pt-3 border-t border-zinc-200/60 dark:border-zinc-800/60">
+                  <WeekdayDistributionChart
+                    timeline={stats.numericalStats.dailyTimeline || []}
+                    unit={stats.numericalStats.unit || "units"}
+                    color={habit.color || "#3B82F6"}
+                    title="Quantitative Output by Day of Week"
+                    subtitle="Distribution of output across Monday through Sunday"
                   />
                 </div>
               </div>

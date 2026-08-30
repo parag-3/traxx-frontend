@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import { API_BASE_URL } from "@/lib/api";
 import { Habit } from "@/types/habit";
 import { TrendLineGraph, TimelineDataPoint } from "./trend-line-graph";
+import { WeekdayDistributionChart } from "./weekday-distribution-chart";
 import { SkeletonAnalyticsDashboard } from "./skeleton";
 import { SpotlightCard } from "./spotlight-card";
 import {
@@ -88,6 +89,23 @@ export function AnalyticsDashboard({
       .map(([date, value]) => ({ date, value }))
       .sort((a, b) => a.date.localeCompare(b.date));
   }, [timeHabits]);
+
+  // Aggregate daily timeline across all Numerical habits
+  const aggregateNumericalTimeline = useMemo(() => {
+    if (numericalHabits.length === 0) return [];
+    const dateMap = new Map<string, number>();
+
+    numericalHabits.forEach((h: any) => {
+      (h.timeline || []).forEach((t: TimelineDataPoint) => {
+        const curr = dateMap.get(t.date) || 0;
+        dateMap.set(t.date, curr + (t.value || 0));
+      });
+    });
+
+    return Array.from(dateMap.entries())
+      .map(([date, value]) => ({ date, value }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+  }, [numericalHabits]);
 
   // Selected specific habit
   const currentSelectedHabit = useMemo(() => {
@@ -200,7 +218,7 @@ export function AnalyticsDashboard({
               No Time or Numerical Habits Created Yet
             </h3>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 max-w-sm mx-auto">
-              Create a Time-based habit (e.g. Deep Work, Reading) or Numerical habit (e.g. Pushups, Water) to see rich historical line graphs and velocity charts!
+              Create a Time-based habit (e.g. Deep Work, Reading) or Numerical habit (e.g. Pushups, Water) to see rich multi-chart visualizations (Line, Bar, Step, Scatter) and weekday productivity distributions!
             </p>
           </div>
           {onNavigateToHabits && (
@@ -312,17 +330,30 @@ export function AnalyticsDashboard({
                 </div>
               </div>
 
-              {/* Spline Graph for this Habit */}
+              {/* Multi-Format Interactive Visualizer for this Habit */}
               <TrendLineGraph
                 data={currentSelectedHabit.timeline || []}
                 unit={currentSelectedHabit.type === "TIME" ? "mins" : currentSelectedHabit.unit || "units"}
                 color={currentSelectedHabit.color || (currentSelectedHabit.type === "TIME" ? "#10B981" : "#3B82F6")}
                 targetValue={currentSelectedHabit.type === "TIME" ? currentSelectedHabit.targetMinutes : currentSelectedHabit.targetValue}
                 title={`${currentSelectedHabit.title} — Performance Progression`}
-                subtitle="Interactive daily logs curve vs target baseline"
+                subtitle="Switch between Line, Column Bars, Step Staircase, and Scatter Bubbles"
                 height={260}
                 showTimeframes={true}
+                showChartTypeSelector={true}
+                defaultChartType="LINE"
               />
+
+              {/* Day-of-Week Focus Distribution for this Habit */}
+              <div className="pt-4 border-t border-zinc-100 dark:border-white/[0.04]">
+                <WeekdayDistributionChart
+                  timeline={currentSelectedHabit.timeline || []}
+                  unit={currentSelectedHabit.type === "TIME" ? "mins" : currentSelectedHabit.unit || "units"}
+                  color={currentSelectedHabit.color || "#10B981"}
+                  title={`${currentSelectedHabit.title} — Weekday Distribution`}
+                  subtitle="Comparison of consistency across Monday through Sunday"
+                />
+              </div>
             </div>
           ) : (
             /* Portfolio Section View */
@@ -347,16 +378,29 @@ export function AnalyticsDashboard({
                     </div>
                   </div>
 
-                  {/* Aggregate Time Line Chart */}
+                  {/* Aggregate Time Visualizer with Line/Bar/Step/Scatter toggles */}
                   <TrendLineGraph
                     data={aggregateTimeTimeline}
                     unit="mins"
                     color="#10B981"
                     title="Daily Focus Minutes Progression"
-                    subtitle="Aggregate time logged across all active time habits"
+                    subtitle="Interactive graph: Line curve, Column bars, Staircase step, or Scatter bubbles"
                     height={240}
                     showTimeframes={true}
+                    showChartTypeSelector={true}
+                    defaultChartType="BAR"
                   />
+
+                  {/* Day-of-Week Breakdown */}
+                  <div className="pt-2 border-t border-zinc-100 dark:border-white/[0.04]">
+                    <WeekdayDistributionChart
+                      timeline={aggregateTimeTimeline}
+                      unit="mins"
+                      color="#10B981"
+                      title="Portfolio Focus Time by Day of Week"
+                      subtitle="Which days of the week do you log the most deep work?"
+                    />
+                  </div>
 
                   {/* Individual Time Habit Cards Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-zinc-100 dark:border-white/[0.04]">
@@ -388,15 +432,17 @@ export function AnalyticsDashboard({
                           </span>
                         </div>
 
-                        {/* Mini sparkline */}
-                        <div className="h-16 w-full">
+                        {/* Mini Visualizer */}
+                        <div className="h-20 w-full">
                           <TrendLineGraph
                             data={h.timeline || []}
                             unit="m"
                             color={h.color || "#10B981"}
                             targetValue={h.targetMinutes}
-                            height={64}
+                            height={80}
                             showTimeframes={false}
+                            showChartTypeSelector={false}
+                            defaultChartType="BAR"
                           />
                         </div>
                       </div>
@@ -423,6 +469,30 @@ export function AnalyticsDashboard({
                         </p>
                       </div>
                     </div>
+                  </div>
+
+                  {/* Aggregate Numerical Visualizer with Chart Type Controls */}
+                  <TrendLineGraph
+                    data={aggregateNumericalTimeline}
+                    unit="units"
+                    color="#3B82F6"
+                    title="Portfolio Quantitative Velocity"
+                    subtitle="Switch between Column Bars, Spline Line, Step Staircase, and Scatter"
+                    height={240}
+                    showTimeframes={true}
+                    showChartTypeSelector={true}
+                    defaultChartType="BAR"
+                  />
+
+                  {/* Day-of-Week Distribution for Numerical Habits */}
+                  <div className="pt-2 border-t border-zinc-100 dark:border-white/[0.04]">
+                    <WeekdayDistributionChart
+                      timeline={aggregateNumericalTimeline}
+                      unit="units"
+                      color="#3B82F6"
+                      title="Quantitative Output by Day of Week"
+                      subtitle="Weekly distribution of quantitative milestones"
+                    />
                   </div>
 
                   {/* Individual Number Habit Cards Grid */}
@@ -455,7 +525,7 @@ export function AnalyticsDashboard({
                           </span>
                         </div>
 
-                        {/* Mini Spline Graph */}
+                        {/* Mini Visualizer */}
                         <div className="h-28 w-full">
                           <TrendLineGraph
                             data={h.timeline || []}
@@ -464,6 +534,8 @@ export function AnalyticsDashboard({
                             targetValue={h.targetValue}
                             height={110}
                             showTimeframes={false}
+                            showChartTypeSelector={false}
+                            defaultChartType="BAR"
                           />
                         </div>
                       </div>
@@ -478,3 +550,4 @@ export function AnalyticsDashboard({
     </div>
   );
 }
+
